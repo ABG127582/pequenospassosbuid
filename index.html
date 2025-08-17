@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pequenos Passos para uma Vida Extraordinária: Dashboard Completo (Tudo em Um)</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="index.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.10.0",
+    "path": "https://esm.sh/path@^0.12.7",
+    "vite": "https://esm.sh/vite@^7.0.5",
+    "dompurify": "https://esm.sh/dompurify@^3.2.6",
+    "@vitejs/plugin-basic-ssl": "https://esm.sh/@vitejs/plugin-basic-ssl@^2.1.0"
+  }
+}
+</script>
+</head>
+<body class="sidebar-collapsed"> <!-- Default to collapsed, JS will adjust based on screen/localStorage -->
+
+    <nav id="sidebar-menu" class="sidebar collapsed">
+        <button id="sidebar-toggle" class="sidebar-toggle-button" aria-label="Alternar menu lateral" aria-expanded="false">
+            <i class="fas fa-bars"></i>
+        </button>
+        <ul class="sidebar-links">
+            <li><a href="#" title="Início" class="sidebar-link" data-page="inicio"><i class="fas fa-home fa-fw"></i><span class="sidebar-text">Início</span></a></li>
+            <li><a href="#" title="Saúde Física" class="sidebar-link" data-page="fisica"><i class="fas fa-heartbeat fa-fw"></i><span class="sidebar-text">Física</span></a></li>
+            <li><a href="#" title="Saúde Mental" class="sidebar-link" data-page="mental"><i class="fas fa-brain fa-fw"></i><span class="sidebar-text">Mental</span></a></li>
+            <li><a href="#" title="Saúde Financeira" class="sidebar-link" data-page="financeira"><i class="fas fa-dollar-sign fa-fw"></i><span class="sidebar-text">Financeira</span></a></li>
+            <li><a href="#" title="Saúde Familiar" class="sidebar-link" data-page="familiar"><i class="fas fa-users fa-fw"></i><span class="sidebar-text">Familiar</span></a></li>
+            <li><a href="#" title="Saúde Profissional" class="sidebar-link" data-page="profissional"><i class="fas fa-briefcase fa-fw"></i><span class="sidebar-text">Profissional</span></a></li>
+            <li><a href="#" title="Saúde Social" class="sidebar-link" data-page="social"><i class="fas fa-comments fa-fw"></i><span class="sidebar-text">Social</span></a></li>
+            <li><a href="#" title="Saúde Espiritual" class="sidebar-link" data-page="espiritual"><i class="fas fa-om fa-fw"></i><span class="sidebar-text">Espiritual</span></a></li>
+            <li><a href="#" title="Saúde Preventiva" class="sidebar-link" data-page="preventiva"><i class="fas fa-shield-alt fa-fw"></i><span class="sidebar-text">Preventiva</span></a></li>
+            <li><a href="#" title="Contrato de Compromisso" class="sidebar-link" data-page="avaliacao-card"><i class="fas fa-file-signature fa-fw"></i><span class="sidebar-text">Contrato</span></a></li>
+            <li><a href="#" title="Planejamento e Tarefas" class="sidebar-link" data-page="planejamento-diario"><i class="fas fa-tasks fa-fw"></i><span class="sidebar-text">Planejamento</span></a></li>
+        </ul>
+    </nav>
+
+    <main id="main-content">
+        <!-- Page content will be loaded here dynamically -->
+    </main>
+
+    <!-- Global Floating Action Buttons and Audio -->
+    <button id="theme-toggle" class="fab-button theme-toggle-button" aria-label="Alternar para modo escuro">
+        <i id="theme-toggle-icon" class="fas fa-moon"></i>
+    </button>
+    <button id="rain-sound-toggle" class="fab-button rain-sound-button" aria-label="Tocar som de chuva">
+        <i class="fas fa-cloud-rain"></i>
+    </button>
+    <audio id="rain-sound" src="https://www.soundjay.com/nature/sounds/rain-03.mp3" loop></audio>
+
+    <!-- Contract Modal -->
+    <div id="contract-modal" class="modal-container" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="contract-modal-title-static">
+        <div class="modal-content large-modal-content">
+            <header class="modal-header">
+                <h2 id="contract-modal-title-static">Contrato de Compromisso Pessoal</h2>
+                <button id="contract-modal-close-btn" class="modal-close-button" aria-label="Fechar Contrato"><i class="fas fa-times"></i></button>
+            </header>
+            <div id="contract-modal-body" class="modal-body">
+                <form id="contract-form">
+                    <p>Eu, <input type="text" id="contract-name" placeholder="Seu Nome Completo" class="inline-input" required>, portador(a) do CPF <input type="text" id="contract-cpf" placeholder="000.000.000-00" class="inline-input">, nascido(a) em <input type="date" id="contract-birthdate" class="inline-input">, residente em <input type="text" id="contract-address" placeholder="Seu Endereço" class="inline-input">, firmo este contrato de compromisso pessoal e intransferível comigo mesmo(a).</p>
+                    
+                    <div class="form-group">
+                        <label for="contract-commitment"><strong>Cláusula 1: O Compromisso</strong></label>
+                        <p>Comprometo-me a dedicar tempo, energia e esforço para melhorar minha saúde e bem-estar em todas as áreas da minha vida, reconhecendo que pequenas ações consistentes levam a grandes transformações. Este compromisso é um ato de autocuidado e amor-próprio.</p>
+                        <div class="input-wrapper textarea-wrapper">
+                            <textarea id="contract-commitment" rows="4" placeholder="Detalhe seu compromisso pessoal aqui. Ex: Comprometo-me a ser mais paciente comigo mesmo(a) e a celebrar cada pequena vitória no meu processo de desenvolvimento..."></textarea>
+                            <button type="button" id="contract-commitment-ai-btn" class="ai-suggestion-btn" title="Sugerir com IA"><i class="fas fa-wand-magic-sparkles"></i><i class="fas fa-spinner fa-spin"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contract-period"><strong>Cláusula 2: O Prazo</strong></label>
+                        <p>Este contrato é válido pelo período de <input type="text" id="contract-period" placeholder="Ex: 90 dias, 6 meses, 1 ano" class="inline-input">, a contar da data de assinatura, podendo ser renovado e reavaliado conforme meu progresso e novas metas.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contract-goals"><strong>Cláusula 3: As Metas</strong></label>
+                        <p>Durante a vigência deste contrato, focarei em alcançar as seguintes metas principais (seja específico):</p>
+                         <div class="input-wrapper textarea-wrapper">
+                            <textarea id="contract-goals" rows="6" placeholder="Ex: 1. Saúde Física: Perder 5kg e correr 5km. 2. Saúde Financeira: Economizar R$1000 para a reserva de emergência. 3. Saúde Mental: Praticar meditação 3x por semana..."></textarea>
+                            <button type="button" id="contract-goals-ai-btn" class="ai-suggestion-btn" title="Sugerir com IA"><i class="fas fa-wand-magic-sparkles"></i><i class="fas fa-spinner fa-spin"></i></button>
+                        </div>
+                    </div>
+
+                     <div class="form-group signature-group">
+                        <label for="contract-date"><strong>Assinatura e Data</strong></label>
+                        <p>Assino o presente contrato em sinal de meu comprometimento e determinação.</p>
+                        <div class="signature-line-container">
+                             <input type="text" id="contract-signature" class="signature-input" placeholder="Digite seu nome para assinar" required>
+                             <input type="date" id="contract-date" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <footer id="contract-modal-actions" class="modal-footer">
+                <button type="button" id="contract-modal-print-btn" class="standard-button-secondary"><i class="fas fa-print"></i> Imprimir</button>
+                <button type="button" id="contract-modal-cancel-btn" class="standard-button-secondary">Fechar</button>
+                <button type="button" id="contract-modal-save-btn" class="standard-button"><i class="fas fa-save"></i> Salvar Contrato</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Gerenciar Tarefas Modal Structure -->
+    <div id="task-modal-gerenciar-tarefas" class="modal-container" role="dialog" aria-modal="true" aria-labelledby="modal-title-tarefas" style="display: none;"> <!-- Changed from modal-overlay to modal-container -->
+        <div class="modal-content task-modal-content">
+            <header class="modal-header">
+                <h2 id="modal-title-tarefas">Adicionar Tarefa</h2>
+                <button id="task-modal-close-btn" class="close-modal modal-close-button" aria-label="Fechar modal de tarefa"><i class="fas fa-times"></i></button>
+            </header>
+            <form id="task-form-gerenciar-tarefas">
+                 <div class="modal-body"> <!-- Added modal-body for consistent scrolling -->
+                    <div class="form-group">
+                        <label for="modal-task-title">Título:</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="modal-task-title" name="title" required>
+                            <button type="button" id="modal-task-title-ai-btn" class="ai-suggestion-btn" title="Sugerir com IA"><i class="fas fa-wand-magic-sparkles"></i><i class="fas fa-spinner fa-spin"></i></button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-task-description">Descrição:</label>
+                        <div class="input-wrapper textarea-wrapper">
+                            <textarea id="modal-task-description" name="description" rows="5"></textarea>
+                            <button type="button" id="modal-task-description-ai-btn" class="ai-suggestion-btn" title="Sugerir com IA"><i class="fas fa-wand-magic-sparkles"></i><i class="fas fa-spinner fa-spin"></i></button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-task-due-date">Data de Vencimento:</label>
+                        <input type="date" id="modal-task-due-date" name="dueDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-task-priority">Prioridade:</label>
+                        <select id="modal-task-priority" name="priority">
+                            <option value="low">Baixa</option>
+                            <option value="medium" selected>Média</option>
+                            <option value="high">Alta</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-task-category">Categoria:</label>
+                        <select id="modal-task-category" name="category">
+                            <option value="">Nenhuma</option>
+                            <!-- Categories will be populated here by JS from Tarefas.html logic -->
+                        </select>
+                    </div>
+                </div> <!-- End modal-body -->
+                <div class="modal-footer modal-actions"> <!-- Combined classes for styling -->
+                    <button type="submit" class="btn btn-primary standard-button">Salvar Tarefa</button>
+                    <button type="button" class="btn btn-outline standard-button-secondary" id="cancel-task-btn-gerenciar-tarefas">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Indicator Chart Modal -->
+    <div id="indicator-chart-modal" class="modal-container" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="indicator-chart-modal-title">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 id="indicator-chart-modal-title">Histórico do Indicador</h2>
+                <button id="indicator-chart-modal-close-btn" class="modal-close-button" aria-label="Fechar Gráfico"><i class="fas fa-times"></i></button>
+            </header>
+            <div class="modal-body">
+                <div id="indicator-chart-container">
+                     <canvas id="indicator-chart-canvas"></canvas>
+                </div>
+                <p id="indicator-chart-no-data" style="display: none; text-align: center; padding: 20px;"></p>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" id="indicator-chart-modal-cancel-btn" class="standard-button-secondary">Fechar</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-notification-container" aria-live="assertive" aria-atomic="true"></div>
+
+    <script type="module" src="index.tsx"></script>
+</body>
+</html>

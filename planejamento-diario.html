@@ -1,0 +1,51 @@
+<div class="page-section" id="page-planejamento-diario">
+    <div class="container">
+        <header class="daily-plan-header">
+            <h1><i class="fas fa-calendar-check" style="margin-right: 10px;"></i> Planejamento Diário</h1>
+            <div class="daily-plan-controls">
+                <input type="date" id="daily-plan-date" aria-label="Data do planejamento">
+                <div class="progress-ring-container">
+                    <svg id="daily-progress-ring" width="60" height="60" viewBox="0 0 120 120">
+                        <circle class="progress-ring-bg" cx="60" cy="60" r="54" />
+                        <circle id="progress-ring-circle" class="progress-ring-fg" cx="60" cy="60" r="54" />
+                        <text id="progress-ring-text" x="50%" y="50%" dy=".3em" text-anchor="middle">0%</text>
+                    </svg>
+                    <span class="sr-only">Progresso das tarefas diárias</span>
+                </div>
+                 <button id="print-daily-plan-btn" class="standard-button small-button" title="Imprimir Plano Diário"><i class="fas fa-print"></i></button>
+            </div>
+        </header>
+
+        <div class="daily-plan-layout">
+            <section id="daily-tasks-section" class="content-section">
+                <div class="section-header-controls">
+                    <h2 class="section-title">Tarefas do Dia</h2>
+                    <div class="controls">
+                        <label for="hide-completed-toggle" class="toggle-label">
+                            <input type="checkbox" id="hide-completed-toggle" class="toggle-checkbox">
+                            <span class="toggle-slider"></span>
+                            Ocultar Concluídas
+                        </label>
+                        <button id="add-daily-task-btn" class="standard-button"><i class="fas fa-plus"></i> Adicionar Tarefa</button>
+                    </div>
+                </div>
+                <p id="mit-summary" class="mit-summary-text">Você tem 0 MIT(s) hoje. Foque nelas!</p>
+                <div id="daily-task-list" class="task-list-diario">
+                    <!-- Tarefas diárias serão inseridas aqui pelo JS -->
+                </div>
+            </section>
+
+            <section id="daily-reflection-section" class="content-section">
+                <h2 class="section-title">Reflexão do Dia</h2>
+                <div class="input-wrapper textarea-wrapper input-mic-wrapper" id="wrapper-daily-reflection">
+                    <textarea id="daily-reflection" placeholder="Como foi seu dia? O que você aprendeu? Pelo que você é grato(a) hoje?"></textarea>
+                    <button type="button" id="daily-reflection-ai-btn" class="ai-suggestion-btn" title="Sugerir Reflexão com IA"><i class="fas fa-wand-magic-sparkles"></i><i class="fas fa-spinner fa-spin"></i></button>
+                </div>
+            </section>
+        </div>
+         <div class="back-button-wrapper">
+            <button class="standard-button back-button"><i class="fas fa-arrow-left"></i> Voltar ao Início</button>
+        </div>
+        <footer><p>© 2025 Pequenos Passos para uma Vida Extraordinária</p></footer>
+    </div>
+</div>
