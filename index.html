@@ -28,6 +28,10 @@
         <button id="sidebar-toggle" class="sidebar-toggle-button" aria-label="Alternar menu lateral" aria-expanded="false">
             <i class="fas fa-bars"></i>
         </button>
+        <div class="sidebar-search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="sidebar-search" placeholder="Buscar..." aria-label="Buscar na navegação">
+        </div>
         <ul class="sidebar-links">
             <li><a href="#" title="Início" class="sidebar-link" data-page="inicio"><i class="fas fa-home fa-fw"></i><span class="sidebar-text">Início</span></a></li>
             <li><a href="#" title="Saúde Física" class="sidebar-link" data-page="fisica"><i class="fas fa-heartbeat fa-fw"></i><span class="sidebar-text">Física</span></a></li>
@@ -41,6 +45,7 @@
             <li><a href="#" title="Contrato de Compromisso" class="sidebar-link" data-page="avaliacao-card"><i class="fas fa-file-signature fa-fw"></i><span class="sidebar-text">Contrato</span></a></li>
             <li><a href="#" title="Planejamento e Tarefas" class="sidebar-link" data-page="planejamento-diario"><i class="fas fa-tasks fa-fw"></i><span class="sidebar-text">Planejamento</span></a></li>
         </ul>
+        <div class="sidebar-no-results" style="display: none;"><span class="sidebar-text">Nenhum resultado.</span></div>
     </nav>
 
     <main id="main-content">

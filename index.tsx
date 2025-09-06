@@ -1,5 +1,6 @@
 
 
+
 import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
 import DOMPurify from 'dompurify';
 
@@ -2338,18 +2339,18 @@ function initTarefasPage() {
 window.initTarefasPage = initTarefasPage;
 
 function initInicioPage() {
-    document.querySelectorAll('#page-inicio .saude-card').forEach(card => {
+    // Fix: Specify HTMLElement generic for querySelectorAll to correctly type 'card'.
+    document.querySelectorAll<HTMLElement>('#page-inicio .saude-card').forEach(card => {
         card.addEventListener('click', (e: Event) => {
-            const cardElement = e.currentTarget as HTMLElement;
             
-            if (cardElement.classList.contains('video-livro')) {
+            if (card.classList.contains('video-livro')) {
                 return;
             }
 
             e.preventDefault();
 
-            if (cardElement.dataset.page) {
-                window.showPage(cardElement.dataset.page);
+            if (card.dataset.page) {
+                window.showPage(card.dataset.page);
                 return;
             }
 
@@ -2365,13 +2366,13 @@ function initInicioPage() {
             };
 
             for (const className in classMap) {
-                if (cardElement.classList.contains(className)) {
+                if (card.classList.contains(className)) {
                     window.showPage(classMap[className]);
                     return; 
                 }
             }
 
-            if (cardElement.classList.contains('avaliacao-card')) {
+            if (card.classList.contains('avaliacao-card')) {
                 window.openContractModal();
                 return;
             }
@@ -2503,477 +2504,244 @@ function initPreventivaPage() {
     if (backButton) {
         backButton.addEventListener('click', () => {
             preventivaPages.forEach(p => (p as HTMLElement).classList.remove('active'));
-            if(mainMenu) mainMenu.classList.add('active');
-            if(mainTitle) mainTitle.textContent = 'Saúde Preventiva';
+            if (mainMenu) mainMenu.classList.add('active');
+            if (mainTitle) mainTitle.textContent = 'Saúde Preventiva';
             backButton.style.display = 'none';
         });
     }
 
-    // Load all data
+    // Vacinas
     window.loadVaccineData();
+    const vaccineRows = document.querySelectorAll<HTMLElement>('#tabela-vacinas tbody tr');
+    vaccineRows.forEach(row => {
+        const vaccineId = row.dataset.vaccineId;
+        if (vaccineId) {
+            const lastDoseInput = row.querySelector('.vaccine-last-dose') as HTMLInputElement;
+            if (lastDoseInput) {
+                lastDoseInput.value = vaccineData[vaccineId] || '';
+                lastDoseInput.addEventListener('change', () => window.updateVaccineStatus(row as HTMLElement));
+            }
+            window.updateVaccineStatus(row as HTMLElement);
+        }
+    });
+
+    // Indicadores e Diagnósticos
     window.loadAllIndicatorData();
     window.loadDiagnosticData();
+    
+    indicatorConfigsPreventiva.forEach(config => {
+        const data = window.loadIndicatorData(config.id);
+        window.updateIndicatorUI(config, data?.value, data?.date);
 
-    // Init Vaccines
-    const vaccineTableRows = document.querySelectorAll('#tabela-vacinas tbody tr');
-    vaccineTableRows.forEach(row => {
-        const rowEl = row as HTMLElement;
-        const vaccineId = rowEl.dataset.vaccineId;
-        if (!vaccineId) return;
+        const card = document.querySelector(`.indicator-card[data-indicator-id="${config.id}"]`);
+        if (card) {
+            const updateButton = card.querySelector('.update-button');
+            const historyButton = card.querySelector('.history-button');
+            const valueInput = card.querySelector('.indicator-value') as HTMLInputElement;
+            const dateInput = card.querySelector('.indicator-date') as HTMLInputElement;
 
-        const dateInput = rowEl.querySelector('.vaccine-last-dose') as HTMLInputElement;
-        if(dateInput) {
-            if (vaccineData[vaccineId]) {
-                dateInput.value = vaccineData[vaccineId];
-            }
-            dateInput.addEventListener('input', () => window.updateVaccineStatus(rowEl));
-        }
-
-        window.updateVaccineStatus(rowEl);
-
-        const infoLink = rowEl.querySelector('.vaccine-info-link');
-        const vaccineInfo = vaccineInfoMap[vaccineId];
-        if(infoLink && vaccineInfo) {
-            infoLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                window.showToast(vaccineInfo.info, 'info');
-            });
-        }
-    });
-
-    // Init Indicators
-    const indicatorCards = document.querySelectorAll('#preventivaExames .indicator-card');
-    indicatorCards.forEach(card => {
-        const cardEl = card as HTMLElement;
-        const indicatorId = cardEl.dataset.indicatorId;
-        if (!indicatorId) return;
-
-        const config = window.getIndicatorById(indicatorId);
-        if (!config) {
-             console.warn(`Config not found for indicator: ${indicatorId}`);
-             return;
-        }
-
-        const data = window.loadIndicatorData(indicatorId);
-        window.updateIndicatorUI(config, data?.value ?? null, data?.date ?? null);
-
-        const updateButton = cardEl.querySelector('.update-button') as HTMLButtonElement;
-        if(updateButton) {
-            updateButton.addEventListener('click', () => {
-                const valueInput = cardEl.querySelector('.indicator-value') as HTMLInputElement;
-                const dateInput = cardEl.querySelector('.indicator-date') as HTMLInputElement;
+            updateButton?.addEventListener('click', () => {
                 const value = parseFloat(valueInput.value);
                 const date = dateInput.value;
-
-                if (isNaN(value) || !date) {
-                    window.showToast('Por favor, preencha o valor e a data.', 'warning');
-                    return;
-                }
-
-                window.saveIndicatorData(indicatorId, value, date);
-                const zone = config.zones.find(z => value >= z.min && value <= z.max);
-                const status = zone ? zone.label : 'Indefinido';
-                window.logIndicatorEntry(indicatorId, value, date, status);
-                window.updateIndicatorUI(config, value, date);
-                window.showToast(`${config.name} salvo com sucesso!`, 'success');
-            });
-        }
-    });
-
-    // Init Diagnostics
-    const diagnosticItems = document.querySelectorAll('#preventivaDiagnosticos .risk-item');
-    diagnosticItems.forEach(item => {
-        const itemEl = item as HTMLElement;
-        const diagnosticId = itemEl.dataset.diagnosticId;
-        if (!diagnosticId) return;
-
-        const toggle = itemEl.querySelector('.diagnostic-toggle') as HTMLInputElement;
-        const details = itemEl.querySelector('.risk-details') as HTMLElement;
-
-        const showDetails = (show: boolean) => {
-            if(details) details.style.display = show ? 'block' : 'none';
-        };
-        
-        if (toggle) {
-            toggle.addEventListener('change', () => showDetails(toggle.checked));
-
-            const data = diagnosticData[diagnosticId];
-            if (data) {
-                toggle.checked = true;
-                const dateInput = itemEl.querySelector('.diagnostic-date') as HTMLInputElement;
-                if(dateInput) dateInput.value = data.date || '';
-                
-                const typeInput = itemEl.querySelector('.diagnostic-type') as HTMLInputElement;
-                if (typeInput) typeInput.value = data.type || '';
-
-                const severityInput = itemEl.querySelector('.diagnostic-severity') as HTMLInputElement;
-                if (severityInput) severityInput.value = data.severity || '';
-                
-                const notesInput = itemEl.querySelector('.diagnostic-notes') as HTMLTextAreaElement;
-                if (notesInput) notesInput.value = data.notes || '';
-                
-                const medicationInput = itemEl.querySelector('.diagnostic-medication') as HTMLInputElement;
-                if (medicationInput) medicationInput.value = data.medication || '';
-            }
-            showDetails(toggle.checked);
-        }
-    });
-    
-    const saveDiagnosticosButton = document.getElementById('saveDiagnosticosButton');
-    if (saveDiagnosticosButton) {
-        saveDiagnosticosButton.addEventListener('click', () => {
-            diagnosticItems.forEach(item => {
-                const itemEl = item as HTMLElement;
-                const diagnosticId = itemEl.dataset.diagnosticId;
-                if (!diagnosticId) return;
-                
-                const toggle = itemEl.querySelector('.diagnostic-toggle') as HTMLInputElement;
-                if (toggle && toggle.checked) {
-                    const date = (itemEl.querySelector('.diagnostic-date') as HTMLInputElement)?.value;
-                    const type = (itemEl.querySelector('.diagnostic-type') as HTMLInputElement)?.value;
-                    const severity = (itemEl.querySelector('.diagnostic-severity') as HTMLInputElement)?.value;
-                    const notes = (itemEl.querySelector('.diagnostic-notes') as HTMLTextAreaElement)?.value;
-                    const medication = (itemEl.querySelector('.diagnostic-medication') as HTMLInputElement)?.value;
-
-                    diagnosticData[diagnosticId] = { date, type, severity, notes, medication };
+                if (!isNaN(value) && date) {
+                    window.saveIndicatorData(config.id, value, date);
+                    const zone = config.zones.find(z => value >= z.min && value <= z.max);
+                    const status = zone ? zone.label : "Indefinido";
+                    window.logIndicatorEntry(config.id, value, date, status);
+                    window.updateIndicatorUI(config, value, date);
+                    window.showToast(`${config.name} atualizado com sucesso!`, 'success');
                 } else {
-                    delete diagnosticData[diagnosticId];
+                    window.showToast('Por favor, insira um valor e data válidos.', 'warning');
                 }
             });
-            window.saveDiagnosticData();
-            window.showToast('Diagnósticos e riscos salvos!', 'success');
-        });
-    }
 
-    // Init Goals
-    window.setupListManagement({
-        sectionKey: 'preventiva',
-        listId: 'preventiva-metas-list',
-        formId: 'preventiva-metas-form',
-        textInputId: 'preventiva-meta-input',
-        storageKey: 'preventivaGoals',
-        itemType: 'goal'
+            historyButton?.addEventListener('click', () => {
+                 window.openIndicatorChartModal(config.id);
+            });
+        }
     });
-    addAIButtonListener('preventiva-meta-input-ai-btn', 'preventiva-meta-input', "Sugira uma meta SMART e concisa para a Saúde Preventiva. Exemplo: 'Agendar check-up médico anual até o final de março' ou 'Realizar autoexame de pele mensalmente'.");
 
+    document.querySelectorAll('.diagnostic-toggle').forEach(toggle => {
+        const riskItem = (toggle as HTMLElement).closest('.risk-item');
+        if (!riskItem) return;
+        
+        const diagnosticId = (riskItem as HTMLElement).dataset.diagnosticId || '';
+        const detailsDiv = riskItem.querySelector('.risk-details') as HTMLElement;
 
-    // Init History
+        const checkbox = toggle as HTMLInputElement;
+        
+        const data = diagnosticData[diagnosticId];
+        if (data && data.date) { 
+             checkbox.checked = true;
+             if (detailsDiv) detailsDiv.style.display = 'block';
+
+             (riskItem.querySelector('.diagnostic-date') as HTMLInputElement).value = data.date;
+             if(riskItem.querySelector('.diagnostic-type')) (riskItem.querySelector('.diagnostic-type') as HTMLInputElement).value = data.type || '';
+             if(riskItem.querySelector('.diagnostic-severity')) (riskItem.querySelector('.diagnostic-severity') as HTMLInputElement).value = data.severity || '';
+             if(riskItem.querySelector('.diagnostic-notes')) (riskItem.querySelector('.diagnostic-notes') as HTMLTextAreaElement).value = data.notes || '';
+             if(riskItem.querySelector('.diagnostic-medication')) (riskItem.querySelector('.diagnostic-medication') as HTMLInputElement).value = data.medication || '';
+        }
+
+        checkbox.addEventListener('change', () => {
+            if (detailsDiv) detailsDiv.style.display = checkbox.checked ? 'block' : 'none';
+        });
+    });
+
+    document.getElementById('saveDiagnosticosButton')?.addEventListener('click', () => {
+        document.querySelectorAll<HTMLElement>('.risk-item').forEach(item => {
+            const id = item.dataset.diagnosticId;
+            const toggle = item.querySelector('.diagnostic-toggle') as HTMLInputElement;
+            if (id && toggle.checked) {
+                diagnosticData[id] = {
+                    date: (item.querySelector('.diagnostic-date') as HTMLInputElement)?.value || '',
+                    type: (item.querySelector('.diagnostic-type') as HTMLInputElement)?.value || '',
+                    severity: (item.querySelector('.diagnostic-severity') as HTMLInputElement)?.value || '',
+                    notes: (item.querySelector('.diagnostic-notes') as HTMLTextAreaElement)?.value || '',
+                    medication: (item.querySelector('.diagnostic-medication') as HTMLInputElement)?.value || '',
+                };
+            } else if (id) {
+                delete diagnosticData[id];
+            }
+        });
+        window.saveDiagnosticData();
+        window.showToast('Diagnósticos e Riscos salvos com sucesso!', 'success');
+    });
+
     window.updateIndicatorHistoryTable();
+
+    window.setupListManagement({ sectionKey: 'preventiva', listId: 'preventiva-metas-list', formId: 'preventiva-metas-form', textInputId: 'preventiva-meta-input', storageKey: 'preventivaGoals', itemType: 'goal' });
+
+    addAIButtonListener('preventiva-meta-input-ai-btn', 'preventiva-meta-input', "Sugira uma meta de saúde preventiva SMART e concisa. Exemplo: 'Agendar o check-up anual com o clínico geral até o final do próximo mês' ou 'Realizar o autoexame de mama no primeiro dia de cada mês'.");
 }
 window.initPreventivaPage = initPreventivaPage;
 
-function initPlanejamentoDiarioPage() {
-    let dailyPlan: DailyPlan;
-    const datePicker = document.getElementById('daily-plan-date') as HTMLInputElement;
-    const taskList = document.getElementById('daily-task-list');
-    const addTaskBtn = document.getElementById('add-daily-task-btn');
-    const reflectionTextarea = document.getElementById('daily-reflection') as HTMLTextAreaElement;
-    const hideCompletedToggle = document.getElementById('hide-completed-toggle') as HTMLInputElement;
-    const mitSummary = document.getElementById('mit-summary');
-    const progressRing = document.querySelector<SVGCircleElement>('#progress-ring-circle');
-    const progressText = document.querySelector<SVGTextElement>('#progress-ring-text');
-    const printBtn = document.getElementById('print-daily-plan-btn');
-
-    const autogrowTextarea = (textarea: HTMLTextAreaElement | null) => {
-        if (!textarea) return;
-        textarea.style.height = 'auto';
-        textarea.style.height = `${textarea.scrollHeight}px`;
-    };
-
-    function loadPlan(date: string) {
-        const storedPlan = window.loadItems(`dailyPlan-${date}`);
-        if (storedPlan) {
-            dailyPlan = storedPlan;
-        } else {
-            dailyPlan = {
-                date,
-                tasks: [],
-                reflection: '',
-                hideCompleted: false
-            };
-        }
-        if(hideCompletedToggle) hideCompletedToggle.checked = dailyPlan.hideCompleted;
-        if(reflectionTextarea) {
-            reflectionTextarea.value = dailyPlan.reflection;
-            autogrowTextarea(reflectionTextarea);
-        }
-        renderTasks();
+// --- Initialize Gemini AI ---
+try {
+    if (!process.env.API_KEY) {
+        throw new Error("API_KEY environment variable not set.");
     }
+    window.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+} catch (e) {
+    console.error(e);
+    window.showToast("Não foi possível inicializar a IA. A chave da API não foi encontrada.", "error");
+}
 
-    function savePlan() {
-        if (!dailyPlan) return;
-        dailyPlan.reflection = reflectionTextarea?.value || '';
-        dailyPlan.hideCompleted = hideCompletedToggle?.checked || false;
-        window.saveItems(`dailyPlan-${dailyPlan.date}`, dailyPlan);
-    }
 
-    function updateProgress() {
-        if (!progressRing || !progressText) return;
-        const totalTasks = dailyPlan.tasks.length;
-        if (totalTasks === 0) {
-            progressRing.style.strokeDashoffset = "339.292"; // Circumference
-            progressText.textContent = '0%';
-            return;
-        }
-        const completedTasks = dailyPlan.tasks.filter(t => t.status === 'completed').length;
-        const percentage = Math.round((completedTasks / totalTasks) * 100);
-        const circumference = 2 * Math.PI * 54;
-        const offset = circumference - (percentage / 100) * circumference;
-        progressRing.style.strokeDashoffset = offset.toString();
-        progressText.textContent = `${percentage}%`;
-    }
+// --- INITIALIZATION SCRIPT ---
+document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize sidebar state on load
+    window.toggleSidebar(true);
 
-    function renderTasks() {
-        if (!taskList || !dailyPlan) return;
-        taskList.innerHTML = '';
-        const tasksToRender = dailyPlan.hideCompleted ? dailyPlan.tasks.filter(t => t.status !== 'completed') : dailyPlan.tasks;
+    // Initialize theme on load
+    window.loadTheme();
 
-        if (tasksToRender.length === 0) {
-            const emptyMessage = document.createElement('p');
-            emptyMessage.textContent = dailyPlan.tasks.length > 0 ? 'Todas as tarefas foram concluídas! 🎉' : 'Nenhuma tarefa para hoje. Adicione uma!';
-            emptyMessage.style.textAlign = 'center';
-            emptyMessage.style.color = 'var(--text-color-muted)';
-            taskList.appendChild(emptyMessage);
-        } else {
-            tasksToRender.forEach(task => {
-                const taskEl = createTaskElement(task);
-                taskList.appendChild(taskEl);
-            });
-        }
-        updateMITSummary();
-        updateProgress();
-    }
-
-    function updateMITSummary() {
-        if (!mitSummary) return;
-        const mitCount = dailyPlan.tasks.filter(t => t.isMIT).length;
-        if(mitCount === 0) {
-            mitSummary.textContent = 'Nenhuma Tarefa Mais Importante (MIT) definida. Considere marcar 1-3 tarefas como MITs.';
-        } else {
-            mitSummary.textContent = `Você tem ${mitCount} Tarefa${mitCount > 1 ? 's' : ''} Mais Importante${mitCount > 1 ? 's' : ''} (MITs) hoje. Foque nelas!`;
-        }
-    }
-
-    function cycleTaskStatus(task: DailyTask) {
-        const statuses: DailyTask['status'][] = ['pending', 'in-progress', 'completed'];
-        const currentIndex = statuses.indexOf(task.status);
-        task.status = statuses[(currentIndex + 1) % statuses.length];
-        savePlan();
-        renderTasks();
-    }
-    
-    function createTaskElement(task: DailyTask) {
-        const item = document.createElement('div');
-        item.className = 'daily-task-item';
-        item.classList.toggle('mit', task.isMIT);
-        item.classList.toggle('completed', task.status === 'completed');
-        item.classList.toggle('in-progress', task.status === 'in-progress');
-
-        const statusIcons: Record<DailyTask['status'], string> = {
-            'pending': 'fa-regular fa-circle',
-            'in-progress': 'fa-solid fa-circle-half-stroke',
-            'completed': 'fa-solid fa-check-circle'
-        };
-
-        item.innerHTML = `
-            <div class="task-main-info">
-                <button class="task-status-toggle" aria-label="Alterar status da tarefa"><i class="${statusIcons[task.status]}"></i></button>
-                <input type="time" class="task-time" value="${task.time}">
-                <div id="desc-wrapper-${task.id}" class="task-description-wrapper input-mic-wrapper planner-mic-wrapper">
-                    <textarea class="task-description" rows="1" placeholder="Descrição da tarefa...">${task.description}</textarea>
-                </div>
-                <div class="task-actions">
-                    <button class="task-mit-toggle ${task.isMIT ? 'active' : ''}" title="Marcar como Tarefa Mais Importante (MIT)">MIT</button>
-                    <button class="standard-button-danger small-button" title="Remover Tarefa"><i class="fas fa-trash"></i></button>
-                </div>
-            </div>
-             <div id="int-wrapper-${task.id}" class="task-intention-wrapper input-mic-wrapper planner-mic-wrapper">
-                 <textarea class="task-intention" rows="1" placeholder="Qual a intenção/resultado esperado?">${task.intention}</textarea>
-            </div>
-        `;
-        
-        const descTextarea = item.querySelector('.task-description') as HTMLTextAreaElement;
-        const timeInput = item.querySelector('.task-time') as HTMLInputElement;
-        const intentionTextarea = item.querySelector('.task-intention') as HTMLTextAreaElement;
-
-        descTextarea.id = `task-desc-${task.id}`;
-        addMicButtonTo(`#desc-wrapper-${task.id}`, descTextarea.id);
-        
-        intentionTextarea.id = `task-int-${task.id}`;
-        addMicButtonTo(`#int-wrapper-${task.id}`, intentionTextarea.id);
-        
-        const updateTask = () => {
-            task.description = descTextarea.value;
-            task.time = timeInput.value;
-            task.intention = intentionTextarea.value;
-            savePlan();
-        };
-
-        descTextarea.addEventListener('input', () => { updateTask(); autogrowTextarea(descTextarea); });
-        timeInput.addEventListener('change', updateTask);
-        intentionTextarea.addEventListener('input', () => { updateTask(); autogrowTextarea(intentionTextarea); });
-        
-        item.querySelector('.task-status-toggle')?.addEventListener('click', () => cycleTaskStatus(task));
-        
-        item.querySelector('.task-mit-toggle')?.addEventListener('click', () => {
-            task.isMIT = !task.isMIT;
-            savePlan();
-            renderTasks();
-        });
-        
-        item.querySelector('.standard-button-danger')?.addEventListener('click', () => {
-            if (confirm('Tem certeza que deseja remover esta tarefa?')) {
-                dailyPlan.tasks = dailyPlan.tasks.filter(t => t.id !== task.id);
-                savePlan();
-                renderTasks();
+    // Handle sidebar link clicks
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const pageId = (e.currentTarget as HTMLElement).dataset.page;
+            if (pageId === 'avaliacao-card') {
+                window.openContractModal();
+            } else if (pageId) {
+                await window.showPage(pageId);
             }
         });
-        
-        // Initial autogrow
-        autogrowTextarea(descTextarea);
-        autogrowTextarea(intentionTextarea);
+    });
 
-        return item;
-    }
-    
-    // --- Event Listeners ---
-    if (datePicker) {
-        datePicker.value = new Date().toISOString().split('T')[0];
-        datePicker.addEventListener('change', () => loadPlan(datePicker.value));
-    }
-    
-    if (addTaskBtn) {
-        addTaskBtn.addEventListener('click', () => {
-            const newTask: DailyTask = {
-                id: `task-${Date.now()}`,
-                time: '',
-                description: '',
-                intention: '',
-                isMIT: false,
-                status: 'pending'
-            };
-            dailyPlan.tasks.push(newTask);
-            savePlan();
-            renderTasks();
-        });
-    }
-
-    if (hideCompletedToggle) {
-        hideCompletedToggle.addEventListener('change', () => {
-            dailyPlan.hideCompleted = hideCompletedToggle.checked;
-            savePlan();
-            renderTasks();
-        });
-    }
-
-    if (reflectionTextarea) {
-        reflectionTextarea.addEventListener('input', () => {
-            savePlan();
-            autogrowTextarea(reflectionTextarea);
-        });
-        addAIButtonListener('daily-reflection-ai-btn', 'daily-reflection', "Sugira uma reflexão curta e positiva sobre o dia, focando em gratidão, aprendizados e preparação para o amanhã.");
-    }
-    
-    if (printBtn) {
-        printBtn.addEventListener('click', () => window.printDailyPlan());
-    }
-
-    // Initial load
-    if (datePicker) loadPlan(datePicker.value);
-}
-window.initPlanejamentoDiarioPage = initPlanejamentoDiarioPage;
-
-window.printDailyPlan = () => {
-    window.print();
-};
-
-function initializeApp() {
-    try {
-        window.ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-    } catch (error) {
-        console.error("Failed to initialize GoogleGenAI. Check API Key.", error);
-        window.showToast("Erro na inicialização da IA. Verifique a chave da API.", "error");
-    }
-    
-    // --- Setup Listeners ---
+    // Handle sidebar toggle click
     document.getElementById('sidebar-toggle')?.addEventListener('click', () => window.toggleSidebar());
     
-    document.querySelectorAll('.sidebar-link').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const page = (link as HTMLElement).dataset.page;
-            if (page) {
-                if (page === 'avaliacao-card') {
-                    window.openContractModal();
-                } else {
-                    window.showPage(page);
-                }
-            }
-        });
-    });
-
-    // Modal Listeners
-    document.getElementById('contract-modal-close-btn')?.addEventListener('click', window.closeContractModal);
-    document.getElementById('contract-modal-cancel-btn')?.addEventListener('click', window.closeContractModal);
-    document.getElementById('contract-modal-save-btn')?.addEventListener('click', window.saveContractData);
-    document.getElementById('contract-modal-print-btn')?.addEventListener('click', window.printContract);
-    addAIButtonListener('contract-commitment-ai-btn', 'contract-commitment', "Sugira um texto inspirador para um compromisso pessoal focado em autocuidado, paciência e celebração do progresso diário.");
-    addAIButtonListener('contract-goals-ai-btn', 'contract-goals', "Sugira um conjunto de 3 metas SMART abrangendo diferentes áreas da vida (física, financeira, mental) para um contrato pessoal de 6 meses.");
-    document.getElementById('contract-modal')?.addEventListener('click', (e) => {
-        if ((e.target as HTMLElement).id === 'contract-modal') {
-            window.closeContractModal();
-        }
-    });
-
-    document.getElementById('indicator-chart-modal-close-btn')?.addEventListener('click', window.closeIndicatorChartModal);
-    document.getElementById('indicator-chart-modal-cancel-btn')?.addEventListener('click', window.closeIndicatorChartModal);
-    document.getElementById('indicator-chart-modal')?.addEventListener('click', (e) => {
-        if ((e.target as HTMLElement).id === 'indicator-chart-modal') {
-            window.closeIndicatorChartModal();
-        }
-    });
-    
-     // Delegated event listener for indicator history buttons
-    document.getElementById('main-content')?.addEventListener('click', (event) => {
-        const target = event.target as HTMLElement;
-        const historyButton = target.closest('.history-button') as HTMLButtonElement;
-        if (historyButton) {
-            const card = historyButton.closest('.indicator-card') as HTMLElement;
-            if (card && card.dataset.indicatorId) {
-                window.openIndicatorChartModal(card.dataset.indicatorId);
-            }
-        }
-    });
-
-
-    // --- Initialization ---
-    window.toggleSidebar(true);
-    window.loadTheme();
+    // Handle theme toggle click
     document.getElementById('theme-toggle')?.addEventListener('click', () => {
         const isDark = document.documentElement.classList.toggle('dark-mode');
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
         window.updateThemeToggleButtonIcon(isDark);
     });
 
-    window.updateRainSoundButtonPosition();
+    // Handle rain sound toggle click
     document.getElementById('rain-sound-toggle')?.addEventListener('click', window.toggleRainSound);
-    if (localStorage.getItem('rainSoundPlaying') === 'true') {
-        const button = document.getElementById('rain-sound-toggle');
-        const audio = document.getElementById('rain-sound') as HTMLAudioElement;
-        if (button && audio) {
-            button.innerHTML = '<i class="fas fa-stop-circle"></i>';
-            audio.play().catch(e => console.log("Autoplay prevented"));
-        }
+    
+    // --- Contract Modal ---
+    document.getElementById('contract-modal-close-btn')?.addEventListener('click', window.closeContractModal);
+    document.getElementById('contract-modal-cancel-btn')?.addEventListener('click', window.closeContractModal);
+    document.getElementById('contract-modal-save-btn')?.addEventListener('click', window.saveContractData);
+    document.getElementById('contract-modal-print-btn')?.addEventListener('click', window.printContract);
+    const contractModal = document.getElementById('contract-modal');
+    if (contractModal) {
+        contractModal.addEventListener('click', (e) => {
+            if (e.target === contractModal) window.closeContractModal();
+        });
+        addAIButtonListener('contract-commitment-ai-btn', 'contract-commitment', 'Sugira um parágrafo para um contrato de compromisso pessoal focado em autodesenvolvimento e bem-estar.');
+        addAIButtonListener('contract-goals-ai-btn', 'contract-goals', 'Sugira 3 metas SMART para um contrato de compromisso pessoal, abrangendo as áreas física, mental e financeira.');
+    }
+    
+    // --- Indicator Chart Modal ---
+    document.getElementById('indicator-chart-modal-close-btn')?.addEventListener('click', window.closeIndicatorChartModal);
+    document.getElementById('indicator-chart-modal-cancel-btn')?.addEventListener('click', window.closeIndicatorChartModal);
+    const indicatorChartModal = document.getElementById('indicator-chart-modal');
+    if(indicatorChartModal) {
+         indicatorChartModal.addEventListener('click', (e) => {
+            if(e.target === indicatorChartModal) window.closeIndicatorChartModal();
+        });
     }
 
-    // Initial page load based on hash or default to 'inicio'
-    const initialPage = window.location.hash.substring(1) || 'inicio';
-    window.showPage(initialPage, true);
-}
+    // --- SIDEBAR SEARCH FUNCTIONALITY ---
+    const searchInput = document.getElementById('sidebar-search') as HTMLInputElement;
+    const sidebar = document.getElementById('sidebar-menu');
+    const sidebarLinksContainer = sidebar?.querySelector('.sidebar-links');
+    const noResultsMessage = sidebar?.querySelector('.sidebar-no-results') as HTMLElement;
 
-document.addEventListener('DOMContentLoaded', initializeApp);
+    if (searchInput && sidebarLinksContainer && noResultsMessage && sidebar) {
+        const sidebarLinks = Array.from(sidebarLinksContainer.querySelectorAll('li'));
 
-// Workaround for module scripts not having a global scope by default
-if (typeof window !== 'undefined') {
-    (window as any).GoogleGenAI = GoogleGenAI;
-}
+        searchInput.addEventListener('input', () => {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            let visibleLinks = 0;
+
+            sidebarLinks.forEach(li => {
+                const link = li.querySelector('a');
+                if (!link) return;
+                
+                const textElement = link.querySelector('.sidebar-text');
+                const linkText = textElement ? (textElement.textContent || '').toLowerCase() : '';
+                const linkTitle = (link.getAttribute('title') || '').toLowerCase();
+
+                if (linkText.includes(searchTerm) || linkTitle.includes(searchTerm)) {
+                    (li as HTMLElement).style.display = '';
+                    visibleLinks++;
+                } else {
+                    (li as HTMLElement).style.display = 'none';
+                }
+            });
+
+            noResultsMessage.style.display = visibleLinks === 0 ? 'block' : 'none';
+        });
+
+        searchInput.addEventListener('focus', () => {
+            if (sidebar.classList.contains('collapsed')) {
+                window.toggleSidebar();
+            }
+        });
+    }
+
+    // --- Initial Page Load ---
+    const pageIdFromHash = window.location.hash.substring(1);
+    const validPageIds = Object.keys(pageInitializers);
+    const initialPageId = pageIdFromHash && validPageIds.includes(pageIdFromHash) ? pageIdFromHash : 'inicio';
+    await window.showPage(initialPageId, true);
+
+    // --- Initialize Rain Sound ---
+    if (localStorage.getItem('rainSoundPlaying') === 'true') {
+        const rainAudio = document.getElementById('rain-sound') as HTMLAudioElement;
+        const rainButton = document.getElementById('rain-sound-toggle');
+        if (rainAudio && rainButton) {
+            rainAudio.play().then(() => {
+                rainButton.innerHTML = '<i class="fas fa-stop-circle"></i>';
+                rainButton.setAttribute('aria-label', 'Desativar som de chuva');
+            }).catch(e => {
+                console.log("Autoplay was prevented by the browser. User must click to start rain sound.");
+                localStorage.setItem('rainSoundPlaying', 'false'); // Reset state
+            });
+        }
+    }
+});
