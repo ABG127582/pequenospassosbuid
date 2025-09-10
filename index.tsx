@@ -1,6 +1,5 @@
 
 
-
 import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
 import DOMPurify from 'dompurify';
 
@@ -85,7 +84,7 @@ declare global {
         showToast: (message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
         saveItems: (storageKey: string, items: any) => void;
         loadItems: (storageKey: string) => any;
-        showPage: (pageId: string, isInitialLoad?: boolean) => Promise<void>;
+        showPage: (pageId: string) => Promise<void>;
         toggleSidebar: (initialize?: boolean) => void;
         updateRainSoundButtonPosition: () => void;
         loadVaccineData: () => void;
@@ -132,7 +131,6 @@ declare global {
         initPlanejamentoDiarioPage: () => void;
         initPreventivaPage: () => void;
         initTarefasPage: () => void;
-        initInicioPage: () => void;
         generateAndDisplayWebResources: (button: HTMLElement, loadingEl: HTMLElement, outputEl: HTMLElement, prompt: string) => Promise<void>;
         getAISuggestionForInput: (prompt: string, targetInput: HTMLInputElement | HTMLTextAreaElement, button: HTMLButtonElement) => Promise<void>;
     }
@@ -305,60 +303,45 @@ function loadItems(storageKey: string) {
 window.loadItems = loadItems;
 
 
-// --- PAGE NAVIGATION ---
+// --- PAGE NAVIGATION & ROUTING ---
 const pageInitializers: { [key: string]: string | null } = {
+    'inicio': null,
     'fisica': 'initFisicaPage',
     'mental': 'initMentalPage',
-    'espiritual': 'initEspiritualPage',
-    'preventiva': 'initPreventivaPage',
     'financeira': 'initFinanceiraPage',
     'familiar': 'initFamiliarPage',
     'profissional': 'initProfissionalPage',
     'social': 'initSocialPage',
+    'espiritual': 'initEspiritualPage',
+    'preventiva': 'initPreventivaPage',
     'planejamento-diario': 'initPlanejamentoDiarioPage',
     'tarefas': 'initTarefasPage',
-    'inicio': 'initInicioPage', 
-    // Food pages - no specific init for now
-    'food-gengibre': null,
-    'food-alho': null,
-    'food-brocolis': null,
-    'food-couveflor': null,
-    'food-shitake': null,
-    'food-lentilha': null,
-    'food-azeite': null,
-    'food-morango': null,
-    'food-laranja': null,
-    'food-maca': null,
-    'food-cenoura': null,
-    'food-pimenta': null,
-    'food-ovo': null,
-    'food-vinagremaca': null,
-    'food-whey': null,
-    'food-creatina': null,
-    'food-curcuma': null,
-    'food-chaverde': null,
-    'food-canela': null,
-    'food-linhaca': null,
-    'alongamento': null, // New page for stretching, yoga, and pilates
-    'leitura-guia-fisica': null,
-    'leitura-guia-espiritual': null,
-    'leitura-guia-familiar': null,
-    'leitura-guia-mental': null,
-    'leitura-guia-financeira': null,
+    'contrato': 'openContractModal', // Special case for modal
+    // Food pages - no specific init
+    'food-gengibre': null, 'food-alho': null, 'food-brocolis': null, 'food-couveflor': null,
+    'food-shitake': null, 'food-lentilha': null, 'food-azeite': null, 'food-morango': null,
+    'food-laranja': null, 'food-maca': null, 'food-cenoura': null, 'food-pimenta': null,
+    'food-ovo': null, 'food-vinagremaca': null, 'food-whey': null, 'food-creatina': null,
+    'food-curcuma': null, 'food-chaverde': null, 'food-canela': null, 'food-linhaca': null,
+    'alongamento': null,
+    // Reading guides
+    'leitura-guia-fisica': null, 'leitura-guia-espiritual': null, 'leitura-guia-familiar': null,
+    'leitura-guia-mental': null, 'leitura-guia-financeira': null,
 };
 let currentPageInitFunction: Function | null = null;
 const pageCache = new Map<string, string>();
 
-async function showPage(pageId: string, isInitialLoad = false) {
+async function showPage(pageId: string) {
     const mainContent = document.getElementById('main-content');
     if (!mainContent) return;
 
-    // Handle button clicks within pages that should navigate
-    const buttonNavTarget = document.querySelector(`[data-page="${pageId}"]`);
-    if (buttonNavTarget && buttonNavTarget.tagName === 'BUTTON') {
-        // This logic handles buttons that act as page links
+    // Handle special case for contract modal
+    if (pageId === 'contrato') {
+        window.openContractModal();
+        // Reset hash so the modal doesn't stay in the URL history
+        history.replaceState(null, '', '#');
+        return;
     }
-
 
     try {
         let pageHtml = pageCache.get(pageId);
@@ -366,11 +349,7 @@ async function showPage(pageId: string, isInitialLoad = false) {
             const response = await fetch(`./${pageId}.html`);
             if (!response.ok) {
                 console.error(`Page not found: ${pageId}.html. Redirecting to 'inicio'.`);
-                if (pageId !== 'inicio') {
-                    await showPage('inicio');
-                } else {
-                    mainContent.innerHTML = `<div class="container" style="padding: 20px; text-align: center;"><h1>Error</h1><p>Home page could not be loaded.</p></div>`;
-                }
+                window.location.hash = 'inicio';
                 return;
             }
             pageHtml = await response.text();
@@ -391,76 +370,52 @@ async function showPage(pageId: string, isInitialLoad = false) {
 
         // Update active link in sidebar
         document.querySelectorAll('.sidebar-link').forEach(link => {
-            link.classList.remove('active', 'fisica', 'mental', 'financeira', 'familiar', 'profissional', 'social', 'espiritual', 'preventiva', 'inicio', 'planejamento-diario', 'tarefas-card');
-            link.removeAttribute('aria-current');
-            if (link.getAttribute('data-page') === pageId) {
-                link.classList.add('active');
+            const linkPage = link.getAttribute('data-page');
+            const isActive = linkPage === pageId || (pageId === 'contrato' && linkPage === 'contrato');
+
+            link.classList.toggle('active', isActive);
+            link.classList.remove('fisica', 'mental', 'financeira', 'familiar', 'profissional', 'social', 'espiritual', 'preventiva', 'inicio', 'planejamento-diario', 'tarefas-card');
+
+            if (isActive) {
                 link.setAttribute('aria-current', 'page');
-                if (['fisica', 'mental', 'financeira', 'familiar', 'profissional', 'social', 'espiritual', 'preventiva', 'inicio', 'planejamento-diario'].includes(pageId)) {
+                 if (['fisica', 'mental', 'financeira', 'familiar', 'profissional', 'social', 'espiritual', 'preventiva', 'inicio', 'planejamento-diario'].includes(pageId)) {
                     link.classList.add(pageId);
                 } else if (pageId === 'tarefas') {
                     link.classList.add('tarefas-card');
                 }
+            } else {
+                link.removeAttribute('aria-current');
             }
         });
         
         const pageTitle = targetSection.querySelector('h1')?.textContent || `Página ${pageId}`;
         document.title = `${pageTitle} | Pequenos Passos`;
         
-        const newHash = `#${pageId}`;
-        let currentFullUrl = window.location.href;
-        const hashIndex = currentFullUrl.indexOf('#');
-        if (hashIndex !== -1) {
-            currentFullUrl = currentFullUrl.substring(0, hashIndex); 
-        }
-        const newUrlForHistory = currentFullUrl + newHash;
-
-
-        if (!isInitialLoad && window.location.hash !== newHash) {
-            history.pushState({ page: pageId }, pageTitle, newUrlForHistory);
-        } else if (isInitialLoad) {
-             if (window.location.href !== newUrlForHistory) { 
-                 history.replaceState({ page: pageId }, pageTitle, newUrlForHistory);
-            }
-        }
-
         const initializerKey = pageInitializers[pageId];
         if (initializerKey && typeof window[initializerKey as keyof Window] === 'function') {
             const initFn = window[initializerKey as keyof Window] as () => void;
-            if (currentPageInitFunction !== initFn || initializerKey === 'initPlanejamentoDiarioPage' || isInitialLoad) {
-                initFn();
-                currentPageInitFunction = initFn;
-            }
+            initFn();
+            currentPageInitFunction = initFn;
         } else {
-             if (initializerKey && typeof window[initializerKey as keyof Window] !== 'function' && (pageId.startsWith('food-') || pageId.startsWith('leitura-') || pageId === 'alongamento')) {
-                // Do not warn for food/reading/stretching pages not having initializers
-            } else if (initializerKey && typeof window[initializerKey as keyof Window] !== 'function') {
-                console.warn(`Page initializer ${initializerKey} not found or not a function.`);
-            }
             currentPageInitFunction = null;
         }
 
     } else {
         console.warn(`Page section not found in loaded HTML for: ${pageId}`);
-        if (pageId !== 'inicio') {
-            await showPage('inicio');
-        }
+        window.location.hash = 'inicio';
     }
 }
 window.showPage = showPage;
 
-window.addEventListener('popstate', async (event) => {
-    if (event.state && event.state.page) {
-        await showPage(event.state.page, true); 
-    } else {
-        const pageIdFromHash = window.location.hash.substring(1);
-        if (pageIdFromHash) {
-            await showPage(pageIdFromHash, true);
-        } else {
-            await showPage('inicio', true);
-        }
+async function router() {
+    let pageId = window.location.hash.substring(1);
+
+    // Default to 'inicio' if hash is empty, invalid, or not in our list of pages
+    if (!pageId || !pageInitializers.hasOwnProperty(pageId)) {
+        pageId = 'inicio';
     }
-});
+    await showPage(pageId);
+}
 
 
 // --- SIDEBAR ---
@@ -1065,46 +1020,73 @@ function showToast(message: string, type: 'info' | 'success' | 'warning' | 'erro
 window.showToast = showToast;
 
 
-// --- RAIN SOUND ---
-let rainAudio: HTMLAudioElement | null = null;
+// --- RAIN SOUND (Web Audio API for seamless loop) ---
+let rainAudioContext: AudioContext | null = null;
+let rainAudioBuffer: AudioBuffer | null = null;
+let rainSourceNode: AudioBufferSourceNode | null = null;
+let isRainPlaying = false;
 
-function toggleRainSound() {
+async function toggleRainSound() {
     const button = document.getElementById('rain-sound-toggle');
     if (!button) return;
 
-    if (!rainAudio) {
-        rainAudio = document.getElementById('rain-sound') as HTMLAudioElement;
-        if (!rainAudio) {
-            console.error("Rain sound audio element not found.");
-            window.showToast("Elemento de áudio não encontrado.", "error");
+    // Initialize AudioContext on first user interaction
+    if (!rainAudioContext) {
+        try {
+            const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+            rainAudioContext = new AudioContext();
+        } catch (e) {
+            console.error("Web Audio API is not supported in this browser.", e);
+            window.showToast("API de áudio não suportada.", "error");
             return;
         }
-        rainAudio.loop = true;
-        rainAudio.volume = 0.3;
     }
 
-    if (rainAudio.paused) {
-        const playPromise = rainAudio.play();
-
-        if (playPromise !== undefined) {
-            playPromise.then(_ => {
-                // Playback started successfully.
-                button.innerHTML = '<i class="fas fa-stop-circle"></i>';
-                button.setAttribute('aria-label', 'Desativar som de chuva');
-                localStorage.setItem('rainSoundPlaying', 'true');
-            }).catch(error => {
-                // Autoplay was prevented by browser policy.
-                console.log("Audio autoplay was prevented by the browser.");
-                button.innerHTML = '<i class="fas fa-cloud-rain"></i>';
-                button.setAttribute('aria-label', 'Ativar som de chuva');
-                localStorage.setItem('rainSoundPlaying', 'false');
-            });
+    // If it's playing, stop it
+    if (isRainPlaying) {
+        if (rainSourceNode) {
+            rainSourceNode.stop();
+            rainSourceNode = null;
         }
-    } else {
-        rainAudio.pause();
+        isRainPlaying = false;
         button.innerHTML = '<i class="fas fa-cloud-rain"></i>';
         button.setAttribute('aria-label', 'Ativar som de chuva');
         localStorage.setItem('rainSoundPlaying', 'false');
+        return;
+    }
+
+    // If it's not playing, start it
+    try {
+        // Fetch and decode audio only if we haven't already
+        if (!rainAudioBuffer) {
+            window.showToast("Carregando som...", "info");
+            const audioEl = document.getElementById('rain-sound') as HTMLAudioElement;
+            if (!audioEl || !audioEl.src) {
+                console.error("Audio element or source not found.");
+                window.showToast("Fonte de áudio não encontrada.", "error");
+                return;
+            }
+            const response = await fetch(audioEl.src);
+            const arrayBuffer = await response.arrayBuffer();
+            rainAudioBuffer = await rainAudioContext.decodeAudioData(arrayBuffer);
+        }
+
+        // Create a new source node (must be done each time you play)
+        rainSourceNode = rainAudioContext.createBufferSource();
+        rainSourceNode.buffer = rainAudioBuffer;
+        rainSourceNode.loop = true; // Set seamless loop
+        rainSourceNode.connect(rainAudioContext.destination);
+        rainSourceNode.start(0);
+
+        isRainPlaying = true;
+        button.innerHTML = '<i class="fas fa-stop-circle"></i>';
+        button.setAttribute('aria-label', 'Desativar som de chuva');
+        localStorage.setItem('rainSoundPlaying', 'true');
+
+    } catch (error) {
+        console.error("Error playing rain sound with Web Audio API:", error);
+        window.showToast("Erro ao tocar o som.", "error");
+        isRainPlaying = false; // Reset state on error
     }
 }
 window.toggleRainSound = toggleRainSound;
@@ -1756,227 +1738,200 @@ function initTarefasPage() {
     let tasks: Task[] = [];
     let categories: string[] = [];
     let editingTaskId: string | null = null;
-    let currentPage = 1;
-    const tasksPerPage = 10;
     let currentFilter = 'all';
     let currentSearch = '';
-    let activeCategory = 'all';
-    let currentView = 'checklist';
+    let currentCategoryFilter = 'all';
+    let currentPage = 1;
+    const tasksPerPage = 10;
+    let currentView = 'checklist'; // 'checklist' or 'table'
     let categoryChart: any = null;
 
-    // Get all DOM elements safely
-    const taskList = document.getElementById('task-list');
-    const checklistContainer = document.getElementById('checklist-view-container');
-    const tableWrapper = document.querySelector<HTMLElement>('.table-wrapper');
-    const emptyState = document.getElementById('empty-state-message');
-    const paginationContainer = document.querySelector<HTMLElement>('.pagination');
-    const paginationInfo = document.querySelector<HTMLElement>('.page-info');
-    const prevPageBtn = document.getElementById('prev-page-btn') as HTMLButtonElement | null;
-    const nextPageBtn = document.getElementById('next-page-btn') as HTMLButtonElement | null;
-    const currentPageEl = document.getElementById('current-page');
-    const totalPagesEl = document.getElementById('total-pages');
-    const categoryList = document.getElementById('categories-list');
-    const modal = document.getElementById('task-modal-gerenciar-tarefas');
-    const modalTitle = document.getElementById('modal-title-tarefas');
-    const taskForm = document.getElementById('task-form-gerenciar-tarefas') as HTMLFormElement | null;
-    const cancelBtn = document.getElementById('cancel-task-btn-gerenciar-tarefas');
-    const modalCloseBtn = document.getElementById('task-modal-close-btn');
-    const quickTaskInput = document.getElementById('quick-task-input') as HTMLInputElement | null;
-    const addTaskBtn = document.getElementById('add-task-btn') as HTMLButtonElement | null;
-    const searchInput = document.getElementById('search-input') as HTMLInputElement | null;
-    const filterSelect = document.getElementById('filter-select') as HTMLSelectElement | null;
-    const addCategoryBtn = document.getElementById('add-category-btn') as HTMLButtonElement | null;
-    const totalCountEl = document.getElementById('total-count');
-    const completedCountEl = document.getElementById('completed-count');
-    const pendingCountEl = document.getElementById('pending-count');
-    const checklistViewBtn = document.getElementById('checklist-view-btn') as HTMLButtonElement | null;
-    const tableViewBtn = document.getElementById('table-view-btn') as HTMLButtonElement | null;
+    // DOM Elements
+    const elements = {
+        // Main container and views
+        container: document.getElementById('page-tarefas'),
+        // FIX: Cast to HTMLElement to ensure style property is available.
+        checklistViewContainer: document.getElementById('checklist-view-container') as HTMLElement,
+        tableViewContainer: document.querySelector('#page-tarefas .table-wrapper') as HTMLElement,
+        taskListBody: document.getElementById('task-list'),
+        emptyStateMessage: document.getElementById('empty-state-message'),
 
-    function loadTasks() {
-        tasks = window.loadItems('tasks') || [];
-        categories = window.loadItems('taskCategories') || ['Pessoal', 'Trabalho', 'Estudos'];
-        currentView = localStorage.getItem('taskView') || 'checklist';
-    }
+        // Controls
+        addCategoryBtn: document.getElementById('add-category-btn'),
+        categoriesList: document.getElementById('categories-list'),
+        searchInput: document.getElementById('search-input') as HTMLInputElement,
+        filterSelect: document.getElementById('filter-select') as HTMLSelectElement,
+        checklistViewBtn: document.getElementById('checklist-view-btn'),
+        tableViewBtn: document.getElementById('table-view-btn'),
 
-    function saveTasks() {
-        window.saveItems('tasks', tasks);
-        window.saveItems('taskCategories', categories);
-    }
+        // Quick Add
+        quickTaskInput: document.getElementById('quick-task-input') as HTMLInputElement,
+        addTaskBtn: document.getElementById('add-task-btn'),
+        quickTaskAIBtn: document.getElementById('quick-task-input-ai-btn') as HTMLButtonElement,
 
-    function renderAll() {
-        if (!categoryList || !taskList || !checklistContainer) return;
-        renderCategories();
-        renderTasks();
-        renderChecklist();
-        updateCounts();
-        updateView();
-        renderCategoryChart();
-    }
+        // Counts
+        totalCountEl: document.getElementById('total-count'),
+        completedCountEl: document.getElementById('completed-count'),
+        pendingCountEl: document.getElementById('pending-count'),
 
-    function renderCategoryChart() {
-        const chartCanvas = document.getElementById('category-chart') as HTMLCanvasElement;
-        const noDataMessage = document.getElementById('chart-no-data');
-        if (!chartCanvas || !noDataMessage) return;
+        // Pagination
+        pageInfoEl: document.querySelector('.pagination .page-info'),
+        currentPageEl: document.getElementById('current-page'),
+        totalPagesEl: document.getElementById('total-pages'),
+        prevPageBtn: document.getElementById('prev-page-btn') as HTMLButtonElement,
+        nextPageBtn: document.getElementById('next-page-btn') as HTMLButtonElement,
 
-        // Destroy existing chart instance
-        if (categoryChart) {
-            categoryChart.destroy();
+        // Modal
+        taskModal: document.getElementById('task-modal-gerenciar-tarefas'),
+        taskModalTitle: document.getElementById('modal-title-tarefas'),
+        taskModalForm: document.getElementById('task-form-gerenciar-tarefas') as HTMLFormElement,
+        taskModalCloseBtn: document.getElementById('task-modal-close-btn'),
+        taskModalCancelBtn: document.getElementById('cancel-task-btn-gerenciar-tarefas'),
+        modalTitleInput: document.getElementById('modal-task-title') as HTMLInputElement,
+        modalDescriptionInput: document.getElementById('modal-task-description') as HTMLTextAreaElement,
+        modalDueDateInput: document.getElementById('modal-task-due-date') as HTMLInputElement,
+        modalPrioritySelect: document.getElementById('modal-task-priority') as HTMLSelectElement,
+        modalCategorySelect: document.getElementById('modal-task-category') as HTMLSelectElement,
+        modalTitleAIBtn: document.getElementById('modal-task-title-ai-btn') as HTMLButtonElement,
+        modalDescriptionAIBtn: document.getElementById('modal-task-description-ai-btn') as HTMLButtonElement,
+
+        // Analytics
+        categoryChartCanvas: document.getElementById('category-chart') as HTMLCanvasElement,
+        chartNoData: document.getElementById('chart-no-data'),
+    };
+
+    if (!elements.container) return; // Exit if not on the right page
+
+    // --- Data Persistence ---
+    const saveData = () => {
+        window.saveItems('tasksData', tasks);
+        window.saveItems('tasksCategories', categories);
+    };
+
+    const loadData = () => {
+        tasks = window.loadItems('tasksData') || [];
+        categories = window.loadItems('tasksCategories') || ['Pessoal', 'Trabalho', 'Estudos'];
+    };
+
+    // --- Modal Logic ---
+    const openTaskModal = (task?: Task) => {
+        if (!elements.taskModal || !elements.taskModalForm || !elements.taskModalTitle) return;
+        elements.taskModalForm.reset();
+        
+        // Populate categories in modal dropdown
+        elements.modalCategorySelect.innerHTML = '<option value="">Nenhuma</option>';
+        categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.textContent = cat;
+            elements.modalCategorySelect.appendChild(option);
+        });
+
+        if (task) {
+            editingTaskId = task.id;
+            elements.taskModalTitle.textContent = 'Editar Tarefa';
+            elements.modalTitleInput.value = task.title;
+            elements.modalDescriptionInput.value = task.description;
+            elements.modalDueDateInput.value = task.dueDate;
+            elements.modalPrioritySelect.value = task.priority;
+            elements.modalCategorySelect.value = task.category;
+        } else {
+            editingTaskId = null;
+            elements.taskModalTitle.textContent = 'Adicionar Tarefa';
+            elements.modalPrioritySelect.value = 'medium';
         }
+        elements.taskModal.style.display = 'flex';
+        setTimeout(() => elements.taskModal?.classList.add('visible'), 10);
+    };
 
-        if (tasks.length === 0) {
-            chartCanvas.style.display = 'none';
-            noDataMessage.style.display = 'block';
+    const closeTaskModal = () => {
+        if (!elements.taskModal) return;
+        elements.taskModal.classList.remove('visible');
+        setTimeout(() => { if(elements.taskModal) elements.taskModal.style.display = 'none'; }, 300);
+    };
+
+    const handleTaskFormSubmit = (e: Event) => {
+        e.preventDefault();
+        const formData = new FormData(elements.taskModalForm);
+        const taskData: Partial<Task> = {
+            title: formData.get('title') as string,
+            description: formData.get('description') as string,
+            dueDate: formData.get('dueDate') as string,
+            priority: formData.get('priority') as 'low' | 'medium' | 'high',
+            category: formData.get('category') as string,
+        };
+
+        if (!taskData.title || taskData.title.trim() === '') {
+            window.showToast('O título da tarefa é obrigatório.', 'warning');
             return;
         }
 
-        chartCanvas.style.display = 'block';
-        noDataMessage.style.display = 'none';
-
-        const categoryCounts = tasks.reduce((acc, task) => {
-            const category = task.category || 'Sem Categoria';
-            acc[category] = (acc[category] || 0) + 1;
-            return acc;
-        }, {} as Record<string, number>);
-
-        const labels = Object.keys(categoryCounts);
-        const data = Object.values(categoryCounts);
-        
-        const chartColors = [
-            'rgba(var(--color-tarefas-rgb), 0.7)',
-            'rgba(var(--color-fisica-rgb), 0.7)',
-            'rgba(var(--color-mental-rgb), 0.7)',
-            'rgba(var(--color-financeira-rgb), 0.7)',
-            'rgba(var(--color-profissional-rgb), 0.7)',
-            'rgba(var(--color-social-rgb), 0.7)',
-            'rgba(var(--color-espiritual-rgb), 0.7)',
-            'rgba(var(--color-familiar-rgb), 0.7)',
-            'rgba(var(--color-planejamento-rgb), 0.7)',
-        ];
-        
-        while (labels.length > chartColors.length) {
-             const r = Math.floor(Math.random() * 200);
-             const g = Math.floor(Math.random() * 200);
-             const b = Math.floor(Math.random() * 200);
-             chartColors.push(`rgba(${r}, ${g}, ${b}, 0.7)`);
-        }
-
-        const ctx = chartCanvas.getContext('2d');
-        if (!ctx) return;
-        
-        const Chart = (window as any).Chart;
-        categoryChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: ' Tarefas',
-                    data: data,
-                    backgroundColor: chartColors,
-                    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--card-background-color').trim(),
-                    borderWidth: 2,
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--text-color-muted').trim(),
-                            boxWidth: 15,
-                            padding: 20
-                        }
-                    },
-                    title: {
-                        display: false,
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed !== null) {
-                                    const total = context.chart.data.datasets[0].data.reduce((a: number, b: number) => a + b, 0);
-                                    const value = context.parsed;
-                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
-                                    label += `${value} (${percentage})`;
-                                }
-                                return label;
-                            }
-                        }
-                    }
-                }
+        if (editingTaskId) {
+            const taskIndex = tasks.findIndex(t => t.id === editingTaskId);
+            if (taskIndex > -1) {
+                tasks[taskIndex] = { ...tasks[taskIndex], ...taskData };
             }
-        });
-    }
-
-    function updateView() {
-        if (!checklistContainer || !tableWrapper || !checklistViewBtn || !tableViewBtn) return;
-        if (currentView === 'checklist') {
-            checklistContainer.style.display = 'flex';
-            tableWrapper.style.display = 'none';
-            checklistViewBtn.classList.add('active');
-            checklistViewBtn.setAttribute('aria-pressed', 'true');
-            tableViewBtn.classList.remove('active');
-            tableViewBtn.setAttribute('aria-pressed', 'false');
         } else {
-            checklistContainer.style.display = 'none';
-            tableWrapper.style.display = 'block';
-            tableViewBtn.classList.add('active');
-            tableViewBtn.setAttribute('aria-pressed', 'true');
-            checklistViewBtn.classList.remove('active');
-            checklistViewBtn.setAttribute('aria-pressed', 'false');
+            const newTask: Task = {
+                id: Date.now().toString(),
+                completed: false,
+                ...taskData
+            } as Task;
+            tasks.unshift(newTask);
         }
-    }
+        saveData();
+        render();
+        closeTaskModal();
+        window.showToast(`Tarefa ${editingTaskId ? 'atualizada' : 'adicionada'} com sucesso!`, 'success');
+    };
 
-    function renderCategories() {
-        if (!categoryList || !addCategoryBtn) return;
-        categoryList.innerHTML = '';
+    // --- Core Rendering Logic ---
+    const render = () => {
+        const filteredTasks = getFilteredTasks();
+        updateCounts(filteredTasks);
+        renderCategories();
+        updatePagination(filteredTasks);
         
-        const allTag = document.createElement('button');
-        allTag.className = 'category-tag';
-        allTag.textContent = 'Todas';
-        allTag.dataset.category = 'all';
-        if (activeCategory === 'all') allTag.classList.add('active');
-        allTag.addEventListener('click', () => {
-            activeCategory = 'all';
-            currentPage = 1;
-            renderAll();
-        });
-        categoryList.appendChild(allTag);
+        const paginatedTasks = getPaginatedTasks(filteredTasks);
 
-        categories.forEach(cat => {
-            const tag = document.createElement('button');
-            tag.className = 'category-tag';
-            tag.textContent = cat;
-            tag.dataset.category = cat;
-            if (activeCategory === cat) tag.classList.add('active');
-            tag.addEventListener('click', () => {
-                activeCategory = cat;
-                currentPage = 1;
-                renderAll();
-            });
-            categoryList.appendChild(tag);
-        });
-        categoryList.appendChild(addCategoryBtn);
-    }
-
-    function getFilteredTasks() {
-        let filtered = tasks;
-        if (activeCategory !== 'all') {
-            filtered = filtered.filter(task => task.category === activeCategory);
+        if (elements.checklistViewContainer && elements.tableViewContainer) {
+            if (currentView === 'checklist') {
+                renderChecklistView(paginatedTasks);
+                elements.checklistViewContainer.style.display = 'flex';
+                elements.tableViewContainer.style.display = 'none';
+            } else {
+                renderTableView(paginatedTasks);
+                elements.checklistViewContainer.style.display = 'none';
+                elements.tableViewContainer.style.display = 'block';
+            }
         }
+
+        if (elements.emptyStateMessage) {
+           elements.emptyStateMessage.style.display = filteredTasks.length === 0 ? 'block' : 'none';
+        }
+        
+        updateAnalytics();
+    };
+
+    const getFilteredTasks = (): Task[] => {
+        let filtered = [...tasks];
+        
+        // Category filter
+        if (currentCategoryFilter !== 'all') {
+            filtered = filtered.filter(task => task.category === currentCategoryFilter);
+        }
+
+        // Search filter
         if (currentSearch) {
             const searchLower = currentSearch.toLowerCase();
-            filtered = filtered.filter(task =>
-                task.title.toLowerCase().includes(searchLower) ||
+            filtered = filtered.filter(task => 
+                task.title.toLowerCase().includes(searchLower) || 
                 task.description.toLowerCase().includes(searchLower)
             );
         }
+
+        // Status filter from dropdown
+        const today = new Date().toISOString().split('T')[0];
         switch (currentFilter) {
             case 'pending':
                 filtered = filtered.filter(task => !task.completed);
@@ -1985,763 +1940,896 @@ function initTarefasPage() {
                 filtered = filtered.filter(task => task.completed);
                 break;
             case 'overdue':
-                const today = new Date();
-                today.setHours(0,0,0,0);
-                filtered = filtered.filter(task => !task.completed && task.dueDate && new Date(task.dueDate + 'T00:00:00') < today);
+                filtered = filtered.filter(task => !task.completed && task.dueDate && task.dueDate < today);
                 break;
             case 'high':
-                filtered = filtered.filter(task => task.priority === 'high');
-                break;
             case 'medium':
-                filtered = filtered.filter(task => task.priority === 'medium');
-                break;
             case 'low':
-                filtered = filtered.filter(task => task.priority === 'low');
+                filtered = filtered.filter(task => task.priority === currentFilter);
                 break;
         }
-        return filtered;
-    }
-
-    function renderTasks() {
-        if (!taskList || !emptyState || !tableWrapper || !paginationContainer) return;
         
-        const filteredTasks = getFilteredTasks();
-        taskList.innerHTML = '';
-
-        if (filteredTasks.length === 0) {
-            emptyState.style.display = 'block';
-            paginationContainer.style.display = 'none';
-            if (currentView === 'table') tableWrapper.style.display = 'none';
-        } else {
-            emptyState.style.display = 'none';
-            if (currentView === 'table') tableWrapper.style.display = 'block';
-            paginationContainer.style.display = 'flex';
-        }
-
-        const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
-        const paginatedTasks = filteredTasks.slice((currentPage - 1) * tasksPerPage, currentPage * tasksPerPage);
-
-        paginatedTasks.forEach(task => {
-            const row = document.createElement('tr');
-            row.dataset.taskId = task.id;
-            if (task.completed) row.classList.add('completed');
-
-            const priorityClasses: { [key: string]: string } = { low: 'priority-low', medium: 'priority-medium', high: 'priority-high' };
-            const priorityText: { [key: string]: string } = { low: 'Baixa', medium: 'Média', high: 'Alta' };
-
-            row.innerHTML = `
-                <td><input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}></td>
-                <td>
-                    <span class="task-title">${task.title}</span>
-                    <span class="task-description-preview">${task.description}</span>
-                </td>
-                <td>${task.dueDate ? new Date(task.dueDate + 'T00:00:00').toLocaleDateString('pt-BR') : 'N/A'}</td>
-                <td><span class="priority-tag ${priorityClasses[task.priority]}">${priorityText[task.priority]}</span></td>
-                <td>${task.category ? `<span class="task-category-badge">${task.category}</span>` : 'Nenhuma'}</td>
-                <td class="task-actions-cell">
-                    <button class="action-btn edit" title="Editar"><i class="fas fa-edit"></i></button>
-                    <button class="action-btn delete" title="Excluir"><i class="fas fa-trash"></i></button>
-                </td>
-            `;
-            row.querySelector('.task-checkbox')?.addEventListener('change', () => toggleTaskCompletion(task.id));
-            row.querySelector('.edit')?.addEventListener('click', () => openTaskModal(task));
-            row.querySelector('.delete')?.addEventListener('click', () => deleteTask(task.id));
-            taskList.appendChild(row);
-        });
-
-        updatePaginationControls(filteredTasks.length, totalPages);
-    }
-
-    function renderChecklist() {
-        if (!checklistContainer) return;
-        const filteredTasks = getFilteredTasks();
-        checklistContainer.innerHTML = '';
-
-        if (filteredTasks.length === 0) return;
-
-        const groupedTasks = filteredTasks.reduce((acc, task) => {
-            const category = task.category || 'Geral';
-            if (!acc[category]) acc[category] = [];
-            acc[category].push(task);
-            return acc;
-        }, {} as Record<string, Task[]>);
-
-        for (const categoryName in groupedTasks) {
-            const categoryGroup = document.createElement('div');
-            categoryGroup.className = 'checklist-category-group';
-            
-            const categoryTitle = document.createElement('h2');
-            categoryTitle.className = 'checklist-category-title';
-            categoryTitle.textContent = categoryName;
-            categoryGroup.appendChild(categoryTitle);
-
-            const tasksForCategory = groupedTasks[categoryName];
-            tasksForCategory.sort((a, b) => (a.completed === b.completed) ? 0 : a.completed ? 1 : -1);
-
-            tasksForCategory.forEach(task => {
-                const item = document.createElement('div');
-                item.className = 'checklist-item';
-                if (task.completed) item.classList.add('completed');
-                item.dataset.taskId = task.id;
-
-                const priorityDots: { [key: string]: string } = {
-                    low: '<div class="priority-dot priority-dot-low" title="Prioridade Baixa"></div>',
-                    medium: '<div class="priority-dot priority-dot-medium" title="Prioridade Média"></div>',
-                    high: '<div class="priority-dot priority-dot-high" title="Prioridade Alta"></div>',
-                };
-
-                const dueDateText = task.dueDate 
-                    ? `<div title="Vencimento"><i class="fas fa-calendar-alt"></i> ${new Date(task.dueDate + 'T00:00:00').toLocaleDateString('pt-BR')}</div>`
-                    : '';
-
-                item.innerHTML = `
-                    <input type="checkbox" class="checklist-item-checkbox" ${task.completed ? 'checked' : ''} aria-labelledby="title-${task.id}">
-                    <div class="checklist-item-content">
-                        <span class="checklist-item-title" id="title-${task.id}">${task.title}</span>
-                        <div class="checklist-item-details">
-                            <div class="checklist-item-priority">${priorityDots[task.priority]}</div>
-                            ${dueDateText}
-                        </div>
-                    </div>
-                    <div class="checklist-item-actions">
-                        <button class="action-btn edit" title="Editar"><i class="fas fa-edit"></i></button>
-                        <button class="action-btn delete" title="Excluir"><i class="fas fa-trash"></i></button>
-                    </div>
-                `;
-
-                item.querySelector('.checklist-item-checkbox')?.addEventListener('change', () => toggleTaskCompletion(task.id));
-                item.querySelector('.edit')?.addEventListener('click', () => openTaskModal(task));
-                item.querySelector('.delete')?.addEventListener('click', () => deleteTask(task.id));
-
-                categoryGroup.appendChild(item);
-            });
-            checklistContainer.appendChild(categoryGroup);
-        }
-    }
-
-    function updatePaginationControls(filteredCount: number, totalPages: number) {
-        if (!paginationInfo || !currentPageEl || !totalPagesEl || !prevPageBtn || !nextPageBtn) return;
-        const startItem = filteredCount > 0 ? (currentPage - 1) * tasksPerPage + 1 : 0;
-        const endItem = Math.min(currentPage * tasksPerPage, filteredCount);
-
-        paginationInfo.innerHTML = `Mostrando ${startItem}-${endItem} de ${filteredCount}`;
-        currentPageEl.textContent = currentPage.toString();
-        totalPagesEl.textContent = totalPages > 0 ? totalPages.toString() : "1";
-
-        prevPageBtn.disabled = currentPage === 1;
-        nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
-    }
-
-    function updateCounts() {
-        if (!totalCountEl || !completedCountEl || !pendingCountEl) return;
+        return filtered.sort((a, b) => (a.dueDate || '9999').localeCompare(b.dueDate || '9999'));
+    };
+    
+    const getPaginatedTasks = (filteredTasks: Task[]): Task[] => {
+        const startIndex = (currentPage - 1) * tasksPerPage;
+        return filteredTasks.slice(startIndex, startIndex + tasksPerPage);
+    };
+    
+    const updateCounts = (filteredTasks: Task[]) => {
+        if (!elements.totalCountEl || !elements.completedCountEl || !elements.pendingCountEl) return;
         const total = tasks.length;
         const completed = tasks.filter(t => t.completed).length;
-        totalCountEl.textContent = total.toString();
-        completedCountEl.textContent = completed.toString();
-        pendingCountEl.textContent = (total - completed).toString();
-    }
+        elements.totalCountEl.textContent = total.toString();
+        elements.completedCountEl.textContent = completed.toString();
+        elements.pendingCountEl.textContent = (total - completed).toString();
+    };
+    
+    const renderCategories = () => {
+        if (!elements.categoriesList || !elements.addCategoryBtn) return;
+        // Clear existing but keep the 'add' button
+        elements.categoriesList.innerHTML = '';
+        elements.categoriesList.appendChild(elements.addCategoryBtn);
 
-    function toggleTaskCompletion(taskId: string) {
-        const task = tasks.find(t => t.id === taskId);
-        if (task) {
-            task.completed = !task.completed;
-            saveTasks();
-            renderAll();
-        }
-    }
+        const allTag = document.createElement('button');
+        allTag.className = `category-tag ${currentCategoryFilter === 'all' ? 'active' : ''}`;
+        allTag.textContent = 'Todas';
+        allTag.dataset.category = 'all';
+        elements.categoriesList.prepend(allTag);
 
-    function deleteTask(taskId: string) {
-        if (confirm('Tem certeza que deseja excluir esta tarefa?')) {
-            tasks = tasks.filter(t => t.id !== taskId);
-            saveTasks();
-            renderAll();
-            window.showToast('Tarefa excluída!', 'info');
-        }
-    }
-
-    function openTaskModal(task: Task | null = null) {
-        if (!modal || !modalTitle || !taskForm) return;
-        editingTaskId = task ? task.id : null;
-        modalTitle.textContent = task ? 'Editar Tarefa' : 'Adicionar Tarefa';
-    
-        const categoryDropdown = document.getElementById('modal-task-category') as HTMLSelectElement;
-        if (categoryDropdown) {
-            categoryDropdown.innerHTML = '<option value="">Nenhuma</option>';
-            categories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat;
-                option.textContent = cat;
-                categoryDropdown.appendChild(option);
-            });
-        }
-    
-        const titleInput = document.getElementById('modal-task-title') as HTMLInputElement;
-        const descriptionInput = document.getElementById('modal-task-description') as HTMLTextAreaElement;
-        const dueDateInput = document.getElementById('modal-task-due-date') as HTMLInputElement;
-        const priorityInput = document.getElementById('modal-task-priority') as HTMLSelectElement;
-    
-        if (task) {
-            if (titleInput) titleInput.value = task.title;
-            if (descriptionInput) descriptionInput.value = task.description;
-            if (dueDateInput) dueDateInput.value = task.dueDate;
-            if (priorityInput) priorityInput.value = task.priority;
-            if (categoryDropdown) categoryDropdown.value = task.category;
-        } else {
-            taskForm.reset();
-        }
-    
-        addAIButtonListener('modal-task-title-ai-btn', 'modal-task-title', "Sugira um título claro e conciso para uma tarefa de gerenciamento de projetos ou pessoal.");
-        addAIButtonListener('modal-task-description-ai-btn', 'modal-task-description', () => {
-            const currentTitle = titleInput?.value || '';
-            return `Para a tarefa com o título '${currentTitle}', sugira uma descrição detalhada, incluindo possíveis subtarefas, critérios de conclusão ou pontos de atenção.`;
+        categories.forEach(cat => {
+            const tag = document.createElement('button');
+            tag.className = `category-tag ${currentCategoryFilter === cat ? 'active' : ''}`;
+            tag.textContent = cat;
+            tag.dataset.category = cat;
+            elements.categoriesList.appendChild(tag);
         });
+    };
+
+    const updatePagination = (filteredTasks: Task[]) => {
+        if (!elements.pageInfoEl || !elements.currentPageEl || !elements.totalPagesEl || !elements.prevPageBtn || !elements.nextPageBtn) return;
+        const totalTasks = filteredTasks.length;
+        const totalPages = Math.ceil(totalTasks / tasksPerPage) || 1;
+
+        elements.pageInfoEl.textContent = `Mostrando ${Math.min((currentPage - 1) * tasksPerPage + 1, totalTasks)}-${Math.min(currentPage * tasksPerPage, totalTasks)} de ${totalTasks}`;
+        elements.currentPageEl.textContent = currentPage.toString();
+        elements.totalPagesEl.textContent = totalPages.toString();
+
+        elements.prevPageBtn.disabled = currentPage === 1;
+        elements.nextPageBtn.disabled = currentPage === totalPages;
+    };
     
-        modal.style.display = 'flex';
-        setTimeout(() => modal.classList.add('visible'), 10);
-    }
+    const renderTableView = (tasksToRender: Task[]) => {
+        if (!elements.taskListBody) return;
+        elements.taskListBody.innerHTML = '';
+        const today = new Date().toISOString().split('T')[0];
 
-    function closeTaskModal() {
-        if (!modal) return;
-        modal.classList.remove('visible');
-        setTimeout(() => { if (modal) modal.style.display = 'none'; }, 300);
-    }
+        tasksToRender.forEach(task => {
+            const row = document.createElement('tr');
+            row.className = task.completed ? 'completed' : '';
+            row.dataset.taskId = task.id;
 
-    function handleFormSubmit(e: Event) {
-        e.preventDefault();
-        if (!taskForm) return;
+            const isOverdue = !task.completed && task.dueDate && task.dueDate < today;
+            const dueDateText = task.dueDate ? new Date(task.dueDate + 'T00:00:00').toLocaleDateString('pt-BR') : 'Sem data';
 
-        const formData = new FormData(taskForm);
-        const taskData: Task = {
-            id: editingTaskId || `task-${Date.now()}`,
-            title: formData.get('title') as string,
-            description: formData.get('description') as string,
-            dueDate: formData.get('dueDate') as string,
-            priority: formData.get('priority') as 'low' | 'medium' | 'high',
-            category: formData.get('category') as string,
-            completed: editingTaskId ? (tasks.find(t => t.id === editingTaskId)?.completed ?? false) : false
-        };
+            row.innerHTML = `
+                <td><input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} aria-label="Marcar tarefa como concluída"></td>
+                <td>
+                    <span class="task-title">${DOMPurify.sanitize(task.title)}</span>
+                    <span class="task-description-preview">${DOMPurify.sanitize(task.description)}</span>
+                </td>
+                <td style="${isOverdue ? 'color: var(--color-error); font-weight: bold;' : ''}">${dueDateText}</td>
+                <td><span class="priority-tag priority-${task.priority}">${task.priority}</span></td>
+                <td>${task.category ? `<span class="task-category-badge">${DOMPurify.sanitize(task.category)}</span>` : ''}</td>
+                <td class="task-actions-cell">
+                    <button class="action-btn edit" aria-label="Editar tarefa"><i class="fas fa-edit"></i></button>
+                    <button class="action-btn delete" aria-label="Excluir tarefa"><i class="fas fa-trash"></i></button>
+                </td>
+            `;
+            elements.taskListBody.appendChild(row);
+        });
+    };
 
-        if (editingTaskId) {
-            tasks = tasks.map(t => t.id === editingTaskId ? taskData : t);
-            window.showToast('Tarefa atualizada com sucesso!', 'success');
+    const renderChecklistView = (tasksToRender: Task[]) => {
+        if (!elements.checklistViewContainer) return;
+        elements.checklistViewContainer.innerHTML = '';
+        
+        const groupedTasks: { [key: string]: Task[] } = {};
+        tasksToRender.forEach(task => {
+            const category = task.category || 'Sem Categoria';
+            if (!groupedTasks[category]) {
+                groupedTasks[category] = [];
+            }
+            groupedTasks[category].push(task);
+        });
+
+        // Ensure category order matches the tags
+        const orderedCategories = ['all', ...categories, 'Sem Categoria'];
+        orderedCategories.forEach(catName => {
+            if (groupedTasks[catName] && groupedTasks[catName].length > 0) {
+                 const groupEl = document.createElement('div');
+                 groupEl.className = 'checklist-category-group';
+                 groupEl.innerHTML = `<h3 class="checklist-category-title">${DOMPurify.sanitize(catName)}</h3>`;
+
+                 groupedTasks[catName].forEach(task => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = `checklist-item ${task.completed ? 'completed' : ''}`;
+                    itemEl.dataset.taskId = task.id;
+                    
+                    const priorityDot = `<div class="priority-dot priority-dot-${task.priority}"></div> ${task.priority}`;
+                    const dueDateText = task.dueDate ? `<i class="fas fa-calendar-alt"></i> ${new Date(task.dueDate + 'T00:00:00').toLocaleDateString('pt-BR')}` : '';
+
+                    itemEl.innerHTML = `
+                        <input type="checkbox" class="checklist-item-checkbox task-checkbox" ${task.completed ? 'checked' : ''} aria-label="Marcar tarefa como concluída">
+                        <div class="checklist-item-content">
+                            <span class="checklist-item-title">${DOMPurify.sanitize(task.title)}</span>
+                            <div class="checklist-item-details">
+                                <div class="checklist-item-priority">${priorityDot}</div>
+                                <div class="checklist-item-date">${dueDateText}</div>
+                            </div>
+                        </div>
+                        <div class="checklist-item-actions">
+                            <button class="action-btn edit small-button" aria-label="Editar tarefa"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn delete small-button" aria-label="Excluir tarefa"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+                    groupEl.appendChild(itemEl);
+                 });
+                 elements.checklistViewContainer.appendChild(groupEl);
+            }
+        });
+    };
+    
+    const updateAnalytics = () => {
+        if (!elements.categoryChartCanvas || !elements.chartNoData) return;
+        const taskCountsByCategory = categories.reduce((acc, cat) => {
+            acc[cat] = tasks.filter(t => t.category === cat && !t.completed).length;
+            return acc;
+        }, {} as Record<string, number>);
+
+        const noCategoryCount = tasks.filter(t => !t.category && !t.completed).length;
+        if(noCategoryCount > 0) {
+            taskCountsByCategory['Sem Categoria'] = noCategoryCount;
+        }
+
+        const labels = Object.keys(taskCountsByCategory).filter(k => taskCountsByCategory[k] > 0);
+        const data = Object.values(taskCountsByCategory).filter(v => v > 0);
+
+        if(data.length === 0){
+             elements.categoryChartCanvas.style.display = 'none';
+             elements.chartNoData.style.display = 'block';
+             return;
+        }
+        elements.categoryChartCanvas.style.display = 'block';
+        elements.chartNoData.style.display = 'none';
+
+        if (categoryChart) {
+            categoryChart.data.labels = labels;
+            categoryChart.data.datasets[0].data = data;
+            categoryChart.update();
         } else {
-            tasks.unshift(taskData);
-            window.showToast('Tarefa adicionada com sucesso!', 'success');
-        }
-
-        saveTasks();
-        renderAll();
-        closeTaskModal();
-    }
-
-    function handleQuickTaskAdd() {
-        if (!quickTaskInput) return;
-        const title = quickTaskInput.value.trim();
-        if (!title) {
-            window.showToast('Por favor, digite um título para a tarefa.', 'warning');
-            return;
-        }
-        const newTask: Task = {
-            id: `task-${Date.now()}`,
-            title,
-            description: '',
-            dueDate: '',
-            priority: 'medium',
-            category: activeCategory !== 'all' ? activeCategory : '',
-            completed: false
-        };
-        tasks.unshift(newTask);
-        saveTasks();
-        renderAll();
-        quickTaskInput.value = '';
-        window.showToast('Tarefa rápida adicionada!', 'success');
-    }
-
-    function handleAddCategory() {
-        const newCategory = prompt('Digite o nome da nova categoria:');
-        if (newCategory && newCategory.trim()) {
-            const trimmedCategory = newCategory.trim();
-            if (!categories.includes(trimmedCategory)) {
-                categories.push(trimmedCategory);
-                saveTasks();
-                activeCategory = trimmedCategory;
-                renderAll();
-            } else {
-                window.showToast('Essa categoria já existe.', 'warning');
+            const Chart = (window as any).Chart;
+            if(Chart) {
+                categoryChart = new Chart(elements.categoryChartCanvas.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Tarefas Pendentes',
+                            data: data,
+                            backgroundColor: [
+                                'rgba(112, 128, 144, 0.7)',
+                                'rgba(70, 130, 180, 0.7)',
+                                'rgba(176, 196, 222, 0.7)',
+                                'rgba(119, 136, 153, 0.7)',
+                                'rgba(100, 149, 237, 0.7)',
+                            ],
+                            borderColor: 'var(--card-background-color)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: { color: 'var(--text-color)' }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Tarefas Pendentes por Categoria',
+                                color: 'var(--text-color)'
+                            }
+                        }
+                    }
+                });
             }
         }
-    }
+    };
 
-    function initEventListeners() {
-        if (taskForm) taskForm.addEventListener('submit', handleFormSubmit);
-        if (cancelBtn) cancelBtn.addEventListener('click', closeTaskModal);
-        if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeTaskModal);
-        if (modal) modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeTaskModal();
+    // --- Event Listeners Setup ---
+    const setupEventListeners = () => {
+        // View Toggle
+        elements.checklistViewBtn?.addEventListener('click', () => {
+            currentView = 'checklist';
+            elements.checklistViewBtn?.classList.add('active');
+            elements.tableViewBtn?.classList.remove('active');
+            render();
+        });
+        elements.tableViewBtn?.addEventListener('click', () => {
+            currentView = 'table';
+            elements.tableViewBtn?.classList.add('active');
+            elements.checklistViewBtn?.classList.remove('active');
+            render();
         });
 
-        if (addTaskBtn) addTaskBtn.addEventListener('click', handleQuickTaskAdd);
-        if (quickTaskInput) quickTaskInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleQuickTaskAdd();
-        });
-
-        if (searchInput) searchInput.addEventListener('input', () => {
-            currentSearch = searchInput.value;
+        // Filters
+        elements.searchInput?.addEventListener('input', (e) => {
+            currentSearch = (e.target as HTMLInputElement).value;
             currentPage = 1;
-            renderTasks();
-            renderChecklist();
+            render();
         });
-
-        if (filterSelect) filterSelect.addEventListener('change', () => {
-            currentFilter = filterSelect.value;
+        elements.filterSelect?.addEventListener('change', (e) => {
+            currentFilter = (e.target as HTMLSelectElement).value;
             currentPage = 1;
-            renderTasks();
-            renderChecklist();
+            render();
         });
 
-        if (addCategoryBtn) addCategoryBtn.addEventListener('click', handleAddCategory);
+        // Category Management
+        elements.addCategoryBtn?.addEventListener('click', () => {
+            const newCategory = prompt('Digite o nome da nova categoria:');
+            if (newCategory && newCategory.trim() !== '' && !categories.includes(newCategory.trim())) {
+                categories.push(newCategory.trim());
+                saveData();
+                render();
+            } else if (newCategory) {
+                window.showToast('Categoria já existe ou nome inválido.', 'warning');
+            }
+        });
+        elements.categoriesList?.addEventListener('click', (e) => {
+            const target = e.target as HTMLElement;
+            if (target.matches('.category-tag')) {
+                currentCategoryFilter = target.dataset.category || 'all';
+                currentPage = 1;
+                render();
+            }
+        });
 
-        if (prevPageBtn) prevPageBtn.addEventListener('click', () => {
+        // Quick Add Task
+        const quickAddTask = () => {
+            const title = elements.quickTaskInput.value.trim();
+            if (title) {
+                tasks.unshift({
+                    id: Date.now().toString(),
+                    title, description: '', dueDate: '',
+                    priority: 'medium', category: currentCategoryFilter !== 'all' ? currentCategoryFilter : '',
+                    completed: false
+                });
+                saveData();
+                render();
+                elements.quickTaskInput.value = '';
+                window.showToast('Tarefa rápida adicionada!', 'success');
+            }
+        };
+        elements.addTaskBtn?.addEventListener('click', quickAddTask);
+        elements.quickTaskInput?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') quickAddTask();
+        });
+        elements.quickTaskAIBtn?.addEventListener('click', () => {
+            window.getAISuggestionForInput("Sugira um título conciso para uma tarefa comum. Por exemplo: 'Agendar consulta médica' ou 'Finalizar relatório de vendas'.", elements.quickTaskInput, elements.quickTaskAIBtn);
+        });
+
+        // Task Actions (delegated)
+        const handleTaskActions = (e: Event) => {
+            const target = e.target as HTMLElement;
+            const taskElement = target.closest('[data-task-id]');
+            if (!taskElement) return;
+
+            const taskId = taskElement.getAttribute('data-task-id');
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            if (target.matches('.task-checkbox, .task-checkbox *')) {
+                task.completed = !task.completed;
+                saveData();
+                render();
+            } else if (target.matches('.edit, .edit *')) {
+                openTaskModal(task);
+            } else if (target.matches('.delete, .delete *')) {
+                if (confirm('Tem certeza que deseja excluir esta tarefa?')) {
+                    tasks = tasks.filter(t => t.id !== taskId);
+                    saveData();
+                    render();
+                    window.showToast('Tarefa excluída.', 'info');
+                }
+            }
+        };
+        elements.tableViewContainer?.addEventListener('click', handleTaskActions);
+        elements.checklistViewContainer?.addEventListener('click', handleTaskActions);
+
+
+        // Pagination
+        elements.prevPageBtn?.addEventListener('click', () => {
             if (currentPage > 1) {
                 currentPage--;
-                renderTasks();
+                render();
             }
         });
-
-        if (nextPageBtn) nextPageBtn.addEventListener('click', () => {
+        elements.nextPageBtn?.addEventListener('click', () => {
             const totalPages = Math.ceil(getFilteredTasks().length / tasksPerPage);
             if (currentPage < totalPages) {
                 currentPage++;
-                renderTasks();
+                render();
             }
         });
 
-        if (checklistViewBtn) checklistViewBtn.addEventListener('click', () => {
-            currentView = 'checklist';
-            localStorage.setItem('taskView', 'checklist');
-            updateView();
+        // Modal Events
+        elements.taskModalForm?.addEventListener('submit', handleTaskFormSubmit);
+        elements.taskModalCloseBtn?.addEventListener('click', closeTaskModal);
+        elements.taskModalCancelBtn?.addEventListener('click', closeTaskModal);
+        // FIX: Corrected typo from taskModalTitleAIBtn to modalTitleAIBtn.
+        elements.modalTitleAIBtn?.addEventListener('click', () => {
+            const prompt = "Com base na seguinte descrição, sugira um título conciso e claro para uma tarefa: " + elements.modalDescriptionInput.value;
+            window.getAISuggestionForInput(prompt, elements.modalTitleInput, elements.modalTitleAIBtn);
         });
-
-        if (tableViewBtn) tableViewBtn.addEventListener('click', () => {
-            currentView = 'table';
-            localStorage.setItem('taskView', 'table');
-            updateView();
+        elements.modalDescriptionAIBtn?.addEventListener('click', () => {
+            const prompt = "Com base no seguinte título de tarefa, elabore uma breve descrição com os principais pontos a serem considerados: " + elements.modalTitleInput.value;
+            window.getAISuggestionForInput(prompt, elements.modalDescriptionInput, elements.modalDescriptionAIBtn);
         });
+    };
 
-        addAIButtonListener('quick-task-input-ai-btn', 'quick-task-input', "Sugira um título para uma nova tarefa comum de produtividade pessoal ou profissional.");
-
-    }
-
-    loadTasks();
-    renderAll();
-    initEventListeners();
+    // --- Initialization ---
+    loadData();
+    setupEventListeners();
+    render();
 }
 window.initTarefasPage = initTarefasPage;
-
-function initInicioPage() {
-    // Fix: Specify HTMLElement generic for querySelectorAll to correctly type 'card'.
-    document.querySelectorAll<HTMLElement>('#page-inicio .saude-card').forEach(card => {
-        card.addEventListener('click', (e: Event) => {
-            
-            if (card.classList.contains('video-livro')) {
-                return;
-            }
-
-            e.preventDefault();
-
-            if (card.dataset.page) {
-                window.showPage(card.dataset.page);
-                return;
-            }
-
-            const classMap: { [key: string]: string } = {
-                'fisica': 'fisica',
-                'mental': 'mental',
-                'financeira': 'financeira',
-                'familiar': 'familiar',
-                'profissional': 'profissional',
-                'social': 'social',
-                'espiritual': 'espiritual',
-                'preventiva': 'preventiva',
-            };
-
-            for (const className in classMap) {
-                if (card.classList.contains(className)) {
-                    window.showPage(classMap[className]);
-                    return; 
-                }
-            }
-
-            if (card.classList.contains('avaliacao-card')) {
-                window.openContractModal();
-                return;
-            }
-        });
-    });
-}
-window.initInicioPage = initInicioPage;
 
 function initSocialPage() {
     window.setupListManagement({ sectionKey: 'social', listId: 'social-metas-list', formId: 'social-metas-form', textInputId: 'social-meta-input', storageKey: 'socialGoals', itemType: 'goal' });
     
+    addAIButtonListener('social-meta-input-ai-btn', 'social-meta-input', "Sugira uma meta SMART e concisa para a Saúde Social. Exemplo: 'Entrar em contato com um amigo que não vejo há tempos uma vez por semana' ou 'Participar de um novo grupo de interesse este mês'.");
+
     const generateBtn = document.getElementById('generate-social-resources-btn') as HTMLElement;
     const loadingEl = document.getElementById('social-resources-loading') as HTMLElement;
     const outputEl = document.getElementById('social-resources-output') as HTMLElement;
-    if(generateBtn && loadingEl && outputEl) {
+    if (generateBtn && loadingEl && outputEl) {
         generateBtn.addEventListener('click', () => {
-            const prompt = "Sugira artigos, vídeos e cursos online sobre como desenvolver habilidades sociais e comunicação interpessoal. Forneça um resumo dos tipos de recursos encontrados e os links diretos.";
+            const prompt = "Sugira 3 livros ou artigos e 2 vídeos ou palestras (com links, se possível) sobre como construir e manter conexões sociais saudáveis na vida adulta. Use o Google Search para encontrar informações atuais e relevantes.";
             window.generateAndDisplayWebResources(generateBtn, loadingEl, outputEl, prompt);
         });
     }
-
-    addAIButtonListener('social-meta-input-ai-btn', 'social-meta-input', "Sugira uma meta SMART e concisa para a Saúde Social. Exemplo: 'Iniciar uma conversa com uma pessoa nova em um evento este mês' ou 'Ligar para um amigo uma vez por semana'.");
 }
 window.initSocialPage = initSocialPage;
 
 function initEspiritualPage() {
+    // Daily checklist
+    const practices = [
+        { id: 'gratidao', text: 'Praticar gratidão (3 coisas)' },
+        { id: 'meditacao', text: '10 minutos de meditação/silêncio' },
+        { id: 'proposito', text: 'Refletir sobre propósito/valores' },
+        { id: 'natureza', text: 'Conectar-se com a natureza' }
+    ];
+    const listEl = document.getElementById('espiritual-praticas-list');
+    const storageKey = `espiritualPractices_${new Date().toISOString().split('T')[0]}`;
+    let completedPractices: string[] = window.loadItems(storageKey) || [];
+
+    const renderPractices = () => {
+        if (!listEl) return;
+        listEl.innerHTML = '';
+        practices.forEach(p => {
+            const isCompleted = completedPractices.includes(p.id);
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <label for="${p.id}-checkbox">
+                    <input type="checkbox" id="${p.id}-checkbox" data-id="${p.id}" ${isCompleted ? 'checked' : ''}>
+                    <span>${p.text}</span>
+                </label>
+            `;
+            listEl.appendChild(li);
+        });
+    };
+
+    listEl?.addEventListener('change', (e) => {
+        const target = e.target as HTMLInputElement;
+        if (target.matches('input[type="checkbox"]')) {
+            const id = target.dataset.id;
+            if (id) {
+                if (target.checked) {
+                    if (!completedPractices.includes(id)) completedPractices.push(id);
+                } else {
+                    completedPractices = completedPractices.filter(pid => pid !== id);
+                }
+                window.saveItems(storageKey, completedPractices);
+            }
+        }
+    });
+
+    renderPractices();
+
+    // Anchor link scrolling
+    const mindMapSection = document.querySelector('.mind-map-section');
+    mindMapSection?.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const button = target.closest('.mind-map-button');
+        if (button && button.getAttribute('href')?.startsWith('#')) {
+            e.preventDefault();
+            const targetId = button.getAttribute('href')?.substring(1);
+            const element = document.getElementById(targetId || '');
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.classList.add('highlight-on-scroll');
+                setTimeout(() => element.classList.remove('highlight-on-scroll'), 2000);
+            }
+        }
+    });
+
+    // List management for goals
     window.setupListManagement({ sectionKey: 'espiritual', listId: 'espiritual-metas-list', formId: 'espiritual-metas-form', textInputId: 'espiritual-meta-input', storageKey: 'espiritualGoals', itemType: 'goal' });
+    
+    addAIButtonListener('espiritual-meta-input-ai-btn', 'espiritual-meta-input', "Sugira uma meta SMART e concisa para a Saúde Espiritual. Exemplo: 'Praticar um diário de gratidão 3 vezes por semana' ou 'Dedicar 1 hora por semana para leitura filosófica'.");
 
     const generateBtn = document.getElementById('generate-spiritual-resources-btn') as HTMLElement;
     const loadingEl = document.getElementById('spiritual-resources-loading') as HTMLElement;
     const outputEl = document.getElementById('spiritual-resources-output') as HTMLElement;
     if (generateBtn && loadingEl && outputEl) {
         generateBtn.addEventListener('click', () => {
-            const prompt = "Sugira livros, textos filosóficos e comunidades online (fóruns, grupos) para aprofundar a saúde espiritual e encontrar propósito. Forneça um resumo dos tipos de recursos encontrados e os links diretos.";
+            const prompt = "Sugira 3 livros (um sobre mindfulness, um sobre estoicismo e um sobre logoterapia) e 2 palestras TED (com links) sobre propósito e significado na vida. Use o Google Search para encontrar informações relevantes.";
             window.generateAndDisplayWebResources(generateBtn, loadingEl, outputEl, prompt);
         });
     }
-
-    const practices = [
-        { id: 'gratidao', text: 'Gratidão Diária' },
-        { id: 'proposito', text: 'Propósito Diário' },
-        { id: 'busca', text: 'Busca do Sagrado, filosófico e correto' },
-        { id: 'natureza', text: 'Conexão com a natureza' }
-    ];
-
-    const practicesListEl = document.getElementById('espiritual-praticas-list');
-    if (practicesListEl) {
-        const today = new Date().toISOString().split('T')[0];
-        const storageKey = `espiritualPractices-${today}`;
-        let completedPractices: string[] = window.loadItems(storageKey) || [];
-
-        const renderPractices = () => {
-            practicesListEl.innerHTML = '';
-            if (practices.length === 0) {
-                const emptyLi = document.createElement('li');
-                emptyLi.textContent = 'Nenhuma prática diária definida.';
-                emptyLi.className = 'empty-list-placeholder';
-                practicesListEl.appendChild(emptyLi);
-                return;
-            }
-
-            practices.forEach(practice => {
-                const li = document.createElement('li');
-                const isChecked = completedPractices.includes(practice.id);
-                li.innerHTML = `
-                    <label>
-                        <input type="checkbox" data-id="${practice.id}" ${isChecked ? 'checked' : ''} aria-labelledby="practice-label-${practice.id}">
-                        <span id="practice-label-${practice.id}">${practice.text}</span>
-                    </label>
-                `;
-                practicesListEl.appendChild(li);
-            });
-        };
-
-        practicesListEl.addEventListener('change', (e) => {
-            const target = e.target as HTMLInputElement;
-            if (target.type === 'checkbox') {
-                const practiceId = target.dataset.id;
-                if (practiceId) {
-                    if (target.checked) {
-                        if (!completedPractices.includes(practiceId)) {
-                            completedPractices.push(practiceId);
-                        }
-                    } else {
-                        completedPractices = completedPractices.filter(id => id !== practiceId);
-                    }
-                    window.saveItems(storageKey, completedPractices);
-                    window.showToast('Progresso diário salvo!', 'success');
-                }
-            }
-        });
-        
-        renderPractices();
-    }
-    
-    addAIButtonListener('espiritual-meta-input-ai-btn', 'espiritual-meta-input', "Sugira uma meta SMART e concisa para a Saúde Espiritual. Exemplo: 'Praticar 5 minutos de meditação de gratidão todas as manhãs' ou 'Ler um capítulo de um livro filosófico por semana'.");
 }
 window.initEspiritualPage = initEspiritualPage;
 
-function initPreventivaPage() {
-    // Sub-page navigation logic
-    const mainTitle = document.getElementById('preventivaMainTitle') as HTMLElement;
-    const backButton = document.getElementById('preventivaBackButton') as HTMLButtonElement;
-    const mainMenu = document.getElementById('preventivaMainMenu') as HTMLElement;
-    const menuItems = document.querySelectorAll('#preventivaMainMenu .menu-item');
-    const preventivaPages = document.querySelectorAll('#page-preventiva .preventiva-page');
+function printDailyPlan() { window.print(); }
+window.printDailyPlan = printDailyPlan;
 
-    const showSubPage = (targetId: string) => {
-        const targetPage = document.getElementById(targetId) as HTMLElement;
-        const targetMenuItem = document.querySelector(`.menu-item[data-target="${targetId}"]`);
-        
-        preventivaPages.forEach(p => (p as HTMLElement).classList.remove('active'));
-        if (mainMenu) mainMenu.classList.remove('active');
-        
-        if (targetPage) {
-            targetPage.classList.add('active');
-            if(mainTitle && targetMenuItem) mainTitle.textContent = targetMenuItem.querySelector('h3')?.textContent || 'Saúde Preventiva';
-            if(backButton) backButton.style.display = 'inline-flex';
+function initPlanejamentoDiarioPage() {
+    let currentPlan: DailyPlan | null = null;
+    let currentDate = new Date().toISOString().split('T')[0];
+
+    const elements = {
+        dateInput: document.getElementById('daily-plan-date') as HTMLInputElement,
+        taskList: document.getElementById('daily-task-list'),
+        addTaskBtn: document.getElementById('add-daily-task-btn'),
+        reflectionTextarea: document.getElementById('daily-reflection') as HTMLTextAreaElement,
+        hideCompletedToggle: document.getElementById('hide-completed-toggle') as HTMLInputElement,
+        mitSummary: document.getElementById('mit-summary'),
+        // FIX: Cast to unknown first to resolve HTMLElement vs SVGCircleElement type conflict.
+        progressRing: document.getElementById('progress-ring-circle') as unknown as SVGCircleElement,
+        progressText: document.getElementById('progress-ring-text'),
+        printBtn: document.getElementById('print-daily-plan-btn'),
+        reflectionAIBtn: document.getElementById('daily-reflection-ai-btn') as HTMLButtonElement,
+    };
+
+    const savePlan = () => {
+        if (currentPlan) {
+            window.saveItems(`dailyPlan_${currentPlan.date}`, currentPlan);
         }
     };
 
-    menuItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const targetId = item.getAttribute('data-target');
-            if (targetId) showSubPage(targetId);
+    const loadPlan = (date: string) => {
+        const storedPlan = window.loadItems(`dailyPlan_${date}`);
+        if (storedPlan) {
+            currentPlan = storedPlan;
+        } else {
+            // Create a new plan for the day with default tasks
+            currentPlan = {
+                date: date,
+                tasks: [
+                    { id: Date.now().toString() + '1', time: '07:00', description: 'Exercício Físico (Cardio ou Força)', intention: 'Energizar o corpo e a mente para o dia.', isMIT: true, status: 'pending' },
+                    { id: Date.now().toString() + '2', time: '09:00', description: 'Foco Profundo na Tarefa Mais Importante (MIT #1)', intention: 'Avançar no projeto mais crítico.', isMIT: true, status: 'pending' },
+                    { id: Date.now().toString() + '3', time: '12:00', description: 'Pausa para Almoço Consciente (sem telas)', intention: 'Nutrir o corpo e descansar a mente.', isMIT: false, status: 'pending' },
+                    { id: Date.now().toString() + '4', time: '15:00', description: 'Revisão de Metas Financeiras/Orçamento', intention: 'Manter o controle sobre a saúde financeira.', isMIT: false, status: 'pending' },
+                    { id: Date.now().toString() + '5', time: '18:00', description: 'Tempo de Qualidade Familiar/Social', intention: 'Nutrir relacionamentos importantes.', isMIT: false, status: 'pending' },
+                    { id: Date.now().toString() + '6', time: '21:00', description: 'Meditação ou Leitura Espiritual/Filosófica', intention: 'Acalmar a mente e conectar com valores.', isMIT: false, status: 'pending' },
+                    { id: Date.now().toString() + '7', time: '22:00', description: 'Ritual de Desligamento (sem telas)', intention: 'Preparar o corpo para um sono reparador.', isMIT: false, status: 'pending' },
+                ],
+                reflection: '',
+                hideCompleted: false,
+            };
+        }
+        render();
+    };
+
+    const render = () => {
+        if (!currentPlan || !elements.taskList || !elements.mitSummary || !elements.progressRing || !elements.progressText) return;
+        elements.taskList.innerHTML = '';
+        
+        const tasksToRender = currentPlan.hideCompleted
+            ? currentPlan.tasks.filter(t => t.status !== 'completed')
+            : currentPlan.tasks;
+
+        tasksToRender.forEach(task => {
+            const taskEl = document.createElement('div');
+            taskEl.className = `daily-task-item ${task.isMIT ? 'mit' : ''} ${task.status}`;
+            taskEl.dataset.id = task.id;
+            
+            const statusIcon = task.status === 'completed' ? 'fa-check-circle' : (task.status === 'in-progress' ? 'fa-hourglass-half' : 'fa-circle');
+            
+            taskEl.innerHTML = `
+                <div class="task-main-info">
+                    <button class="task-status-toggle" aria-label="Alterar status da tarefa"><i class="fas ${statusIcon}"></i></button>
+                    <input type="time" class="task-time" value="${task.time}">
+                    <div class="task-description-wrapper input-mic-wrapper planner-mic-wrapper">
+                         <textarea class="task-description" rows="1">${task.description}</textarea>
+                    </div>
+                     <div class="task-actions">
+                        <button class="task-mit-toggle ${task.isMIT ? 'active' : ''}" title="Marcar como Tarefa Mais Importante">MIT</button>
+                        <button class="standard-button-danger small-button delete-task-btn" title="Excluir Tarefa"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <div class="task-intention-wrapper input-mic-wrapper planner-mic-wrapper">
+                    <textarea class="task-intention" rows="1" placeholder="Qual a intenção por trás desta tarefa?">${task.intention}</textarea>
+                </div>
+            `;
+            elements.taskList?.appendChild(taskEl);
+
+             // Auto-resize textareas
+            const textareas = taskEl.querySelectorAll('textarea');
+            textareas.forEach(textarea => {
+                textarea.style.height = 'auto';
+                textarea.style.height = `${textarea.scrollHeight}px`;
+                textarea.addEventListener('input', () => {
+                    textarea.style.height = 'auto';
+                    textarea.style.height = `${textarea.scrollHeight}px`;
+                });
+            });
         });
+
+        elements.reflectionTextarea.value = currentPlan.reflection;
+        elements.hideCompletedToggle.checked = currentPlan.hideCompleted;
+        
+        const mitCount = currentPlan.tasks.filter(t => t.isMIT).length;
+        elements.mitSummary.textContent = `Você tem ${mitCount} MIT(s) hoje. Foque nelas!`;
+
+        const completedCount = currentPlan.tasks.filter(t => t.status === 'completed').length;
+        const totalTasks = currentPlan.tasks.length;
+        const progress = totalTasks > 0 ? Math.round((completedCount / totalTasks) * 100) : 0;
+        
+        const radius = elements.progressRing.r.baseVal.value;
+        const circumference = 2 * Math.PI * radius;
+        elements.progressRing.style.strokeDasharray = `${circumference} ${circumference}`;
+        const offset = circumference - (progress / 100) * circumference;
+        elements.progressRing.style.strokeDashoffset = offset.toString();
+        elements.progressText.textContent = `${progress}%`;
+    };
+
+    const handleTaskUpdate = (id: string, field: 'time' | 'description' | 'intention', value: string) => {
+        if (!currentPlan) return;
+        const task = currentPlan.tasks.find(t => t.id === id);
+        if (task) {
+            (task as any)[field] = value;
+            savePlan();
+        }
+    };
+    
+    // Event Listeners
+    elements.dateInput?.addEventListener('change', () => {
+        currentDate = elements.dateInput.value;
+        loadPlan(currentDate);
     });
 
-    if (backButton) {
-        backButton.addEventListener('click', () => {
-            preventivaPages.forEach(p => (p as HTMLElement).classList.remove('active'));
-            if (mainMenu) mainMenu.classList.add('active');
-            if (mainTitle) mainTitle.textContent = 'Saúde Preventiva';
-            backButton.style.display = 'none';
+    elements.hideCompletedToggle?.addEventListener('change', () => {
+        if (currentPlan) {
+            currentPlan.hideCompleted = elements.hideCompletedToggle.checked;
+            savePlan();
+            render();
+        }
+    });
+    
+    elements.addTaskBtn?.addEventListener('click', () => {
+        if (currentPlan) {
+            const newTask: DailyTask = {
+                id: Date.now().toString(),
+                time: '09:00',
+                description: 'Nova Tarefa',
+                intention: '',
+                isMIT: false,
+                status: 'pending',
+            };
+            currentPlan.tasks.push(newTask);
+            savePlan();
+            render();
+        }
+    });
+
+    elements.taskList?.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const taskEl = target.closest('.daily-task-item') as HTMLElement;
+        if (!taskEl || !currentPlan) return;
+        const id = taskEl.dataset.id!;
+        const task = currentPlan.tasks.find(t => t.id === id);
+        if (!task) return;
+
+        if (target.closest('.task-status-toggle')) {
+            const statuses: DailyTask['status'][] = ['pending', 'in-progress', 'completed'];
+            const currentIndex = statuses.indexOf(task.status);
+            task.status = statuses[(currentIndex + 1) % statuses.length];
+        } else if (target.closest('.task-mit-toggle')) {
+            task.isMIT = !task.isMIT;
+        } else if (target.closest('.delete-task-btn')) {
+            if (confirm('Tem certeza que deseja excluir esta tarefa?')) {
+                currentPlan.tasks = currentPlan.tasks.filter(t => t.id !== id);
+            }
+        }
+        savePlan();
+        render();
+    });
+
+    elements.taskList?.addEventListener('input', (e) => {
+        const target = e.target as HTMLInputElement | HTMLTextAreaElement;
+        const taskEl = target.closest('.daily-task-item') as HTMLElement;
+        if (!taskEl) return;
+        const id = taskEl.dataset.id!;
+        
+        if (target.matches('.task-time')) handleTaskUpdate(id, 'time', target.value);
+        if (target.matches('.task-description')) handleTaskUpdate(id, 'description', target.value);
+        if (target.matches('.task-intention')) handleTaskUpdate(id, 'intention', target.value);
+    });
+    
+    elements.reflectionTextarea?.addEventListener('input', () => {
+        if (currentPlan) {
+            currentPlan.reflection = elements.reflectionTextarea.value;
+            savePlan();
+        }
+    });
+
+    elements.printBtn?.addEventListener('click', window.printDailyPlan);
+
+    elements.reflectionAIBtn?.addEventListener('click', () => {
+        const tasksDone = currentPlan?.tasks.filter(t => t.status === 'completed').map(t => t.description).join(', ') || 'Nenhuma tarefa concluída.';
+        const prompt = `Com base nas tarefas que concluí hoje (${tasksDone}), ajude-me a escrever uma breve reflexão para o final do dia. Foque em um ponto de aprendizado e um motivo para gratidão.`;
+        window.getAISuggestionForInput(prompt, elements.reflectionTextarea, elements.reflectionAIBtn);
+    });
+
+    // Initial Load
+    elements.dateInput.value = currentDate;
+    loadPlan(currentDate);
+
+    // Add microphone buttons
+    addMicButtonTo('#wrapper-daily-reflection', 'daily-reflection', 'planner-mic');
+}
+window.initPlanejamentoDiarioPage = initPlanejamentoDiarioPage;
+
+function initPreventivaPage() {
+    const mainTitle = document.getElementById('preventivaMainTitle');
+    const backButton = document.getElementById('preventivaBackButton');
+    const mainMenu = document.getElementById('preventivaMainMenu');
+    const pages = document.querySelectorAll<HTMLElement>('.preventiva-page');
+
+    const showSubPage = (pageId: string) => {
+        mainMenu?.classList.remove('active');
+        pages.forEach(p => p.classList.remove('active'));
+        
+        const targetPage = document.getElementById(pageId);
+        if (targetPage) {
+            targetPage.classList.add('active');
+            if(mainTitle) mainTitle.textContent = targetPage.querySelector('h2')?.textContent || 'Saúde Preventiva';
+            backButton?.style.setProperty('display', 'inline-flex');
+        }
+    };
+    
+    const showMainMenu = () => {
+        pages.forEach(p => p.classList.remove('active'));
+        mainMenu?.classList.add('active');
+        if(mainTitle) mainTitle.textContent = 'Saúde Preventiva';
+        if(backButton) backButton.style.display = 'none';
+    };
+
+    mainMenu?.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        // FIX: Use generic closest to get correct HTMLElement type and access dataset.
+        const menuItem = target.closest<HTMLElement>('.menu-item');
+        if (menuItem && menuItem.dataset.target) {
+            showSubPage(menuItem.dataset.target);
+        }
+    });
+
+    backButton?.addEventListener('click', showMainMenu);
+
+    // Vaccine table logic
+    const vaccineTable = document.getElementById('tabela-vacinas');
+    if (vaccineTable) {
+        window.loadVaccineData();
+        vaccineTable.querySelectorAll('tr[data-vaccine-id]').forEach(row => {
+            const vaccineId = (row as HTMLElement).dataset.vaccineId;
+            if (vaccineId) {
+                const lastDoseInput = row.querySelector('.vaccine-last-dose') as HTMLInputElement;
+                lastDoseInput.value = vaccineData[vaccineId] || '';
+                window.updateVaccineStatus(row as HTMLElement);
+
+                lastDoseInput.addEventListener('change', () => {
+                    window.updateVaccineStatus(row as HTMLElement);
+                });
+            }
         });
     }
-
-    // Vacinas
-    window.loadVaccineData();
-    const vaccineRows = document.querySelectorAll<HTMLElement>('#tabela-vacinas tbody tr');
-    vaccineRows.forEach(row => {
-        const vaccineId = row.dataset.vaccineId;
-        if (vaccineId) {
-            const lastDoseInput = row.querySelector('.vaccine-last-dose') as HTMLInputElement;
-            if (lastDoseInput) {
-                lastDoseInput.value = vaccineData[vaccineId] || '';
-                lastDoseInput.addEventListener('change', () => window.updateVaccineStatus(row as HTMLElement));
-            }
-            window.updateVaccineStatus(row as HTMLElement);
-        }
-    });
-
-    // Indicadores e Diagnósticos
+    
+    // Indicators and Diagnostics logic
     window.loadAllIndicatorData();
     window.loadDiagnosticData();
-    
-    indicatorConfigsPreventiva.forEach(config => {
-        const data = window.loadIndicatorData(config.id);
+
+    document.querySelectorAll('.indicator-card').forEach(card => {
+        const indicatorId = (card as HTMLElement).dataset.indicatorId;
+        if (!indicatorId) return;
+        
+        const config = window.getIndicatorById(indicatorId);
+        if (!config) return;
+
+        const data = window.loadIndicatorData(indicatorId);
         window.updateIndicatorUI(config, data?.value, data?.date);
 
-        const card = document.querySelector(`.indicator-card[data-indicator-id="${config.id}"]`);
-        if (card) {
-            const updateButton = card.querySelector('.update-button');
-            const historyButton = card.querySelector('.history-button');
+        const updateBtn = card.querySelector('.update-button');
+        updateBtn?.addEventListener('click', () => {
             const valueInput = card.querySelector('.indicator-value') as HTMLInputElement;
             const dateInput = card.querySelector('.indicator-date') as HTMLInputElement;
+            const value = parseFloat(valueInput.value);
+            const date = dateInput.value;
+            
+            if (isNaN(value) || !date) {
+                window.showToast("Por favor, preencha o valor e a data.", "warning");
+                return;
+            }
+            
+            const zone = config.zones.find(z => value >= z.min && value <= z.max);
+            const statusText = zone ? zone.label : 'Indefinido';
 
-            updateButton?.addEventListener('click', () => {
-                const value = parseFloat(valueInput.value);
-                const date = dateInput.value;
-                if (!isNaN(value) && date) {
-                    window.saveIndicatorData(config.id, value, date);
-                    const zone = config.zones.find(z => value >= z.min && value <= z.max);
-                    const status = zone ? zone.label : "Indefinido";
-                    window.logIndicatorEntry(config.id, value, date, status);
-                    window.updateIndicatorUI(config, value, date);
-                    window.showToast(`${config.name} atualizado com sucesso!`, 'success');
-                } else {
-                    window.showToast('Por favor, insira um valor e data válidos.', 'warning');
-                }
-            });
+            window.saveIndicatorData(indicatorId, value, date);
+            window.updateIndicatorUI(config, value, date);
+            window.logIndicatorEntry(indicatorId, value, date, statusText);
+            window.showToast("Indicador salvo com sucesso!", "success");
+        });
 
-            historyButton?.addEventListener('click', () => {
-                 window.openIndicatorChartModal(config.id);
-            });
-        }
+        const historyBtn = card.querySelector('.history-button');
+        historyBtn?.addEventListener('click', () => {
+            window.openIndicatorChartModal(indicatorId);
+        });
     });
 
-    document.querySelectorAll('.diagnostic-toggle').forEach(toggle => {
-        const riskItem = (toggle as HTMLElement).closest('.risk-item');
-        if (!riskItem) return;
-        
-        const diagnosticId = (riskItem as HTMLElement).dataset.diagnosticId || '';
-        const detailsDiv = riskItem.querySelector('.risk-details') as HTMLElement;
+    document.querySelectorAll('.risk-item').forEach(item => {
+        const diagnosticId = (item as HTMLElement).dataset.diagnosticId;
+        if (!diagnosticId) return;
 
-        const checkbox = toggle as HTMLInputElement;
+        const toggle = item.querySelector('.diagnostic-toggle') as HTMLInputElement;
+        const details = item.querySelector('.risk-details') as HTMLElement;
         
         const data = diagnosticData[diagnosticId];
-        if (data && data.date) { 
-             checkbox.checked = true;
-             if (detailsDiv) detailsDiv.style.display = 'block';
-
-             (riskItem.querySelector('.diagnostic-date') as HTMLInputElement).value = data.date;
-             if(riskItem.querySelector('.diagnostic-type')) (riskItem.querySelector('.diagnostic-type') as HTMLInputElement).value = data.type || '';
-             if(riskItem.querySelector('.diagnostic-severity')) (riskItem.querySelector('.diagnostic-severity') as HTMLInputElement).value = data.severity || '';
-             if(riskItem.querySelector('.diagnostic-notes')) (riskItem.querySelector('.diagnostic-notes') as HTMLTextAreaElement).value = data.notes || '';
-             if(riskItem.querySelector('.diagnostic-medication')) (riskItem.querySelector('.diagnostic-medication') as HTMLInputElement).value = data.medication || '';
+        if (data) {
+            toggle.checked = true;
+            details.style.display = 'block';
+            (item.querySelector('.diagnostic-date') as HTMLInputElement).value = data.date || '';
+            const typeInput = item.querySelector('.diagnostic-type') as HTMLInputElement;
+            if (typeInput) typeInput.value = data.type || '';
+            const severityInput = item.querySelector('.diagnostic-severity') as HTMLInputElement;
+            if (severityInput) severityInput.value = data.severity || '';
+            const notesInput = item.querySelector('.diagnostic-notes') as HTMLTextAreaElement;
+            if (notesInput) notesInput.value = data.notes || '';
+            const medicationInput = item.querySelector('.diagnostic-medication') as HTMLInputElement;
+            if(medicationInput) medicationInput.value = data.medication || '';
         }
 
-        checkbox.addEventListener('change', () => {
-            if (detailsDiv) detailsDiv.style.display = checkbox.checked ? 'block' : 'none';
+        toggle.addEventListener('change', () => {
+            details.style.display = toggle.checked ? 'block' : 'none';
         });
     });
 
     document.getElementById('saveDiagnosticosButton')?.addEventListener('click', () => {
-        document.querySelectorAll<HTMLElement>('.risk-item').forEach(item => {
-            const id = item.dataset.diagnosticId;
+        document.querySelectorAll('.risk-item').forEach(item => {
+            const diagnosticId = (item as HTMLElement).dataset.diagnosticId;
+            if (!diagnosticId) return;
+
             const toggle = item.querySelector('.diagnostic-toggle') as HTMLInputElement;
-            if (id && toggle.checked) {
-                diagnosticData[id] = {
+            if (toggle.checked) {
+                 diagnosticData[diagnosticId] = {
                     date: (item.querySelector('.diagnostic-date') as HTMLInputElement)?.value || '',
                     type: (item.querySelector('.diagnostic-type') as HTMLInputElement)?.value || '',
                     severity: (item.querySelector('.diagnostic-severity') as HTMLInputElement)?.value || '',
                     notes: (item.querySelector('.diagnostic-notes') as HTMLTextAreaElement)?.value || '',
                     medication: (item.querySelector('.diagnostic-medication') as HTMLInputElement)?.value || '',
                 };
-            } else if (id) {
-                delete diagnosticData[id];
+            } else {
+                delete diagnosticData[diagnosticId];
             }
         });
         window.saveDiagnosticData();
-        window.showToast('Diagnósticos e Riscos salvos com sucesso!', 'success');
+        window.showToast("Dados de diagnósticos salvos!", "success");
     });
-
+    
+    // History Table
     window.updateIndicatorHistoryTable();
 
-    window.setupListManagement({ sectionKey: 'preventiva', listId: 'preventiva-metas-list', formId: 'preventiva-metas-form', textInputId: 'preventiva-meta-input', storageKey: 'preventivaGoals', itemType: 'goal' });
+    // Chart Modal Close buttons
+    document.getElementById('indicator-chart-modal-close-btn')?.addEventListener('click', window.closeIndicatorChartModal);
+    document.getElementById('indicator-chart-modal-cancel-btn')?.addEventListener('click', window.closeIndicatorChartModal);
 
-    addAIButtonListener('preventiva-meta-input-ai-btn', 'preventiva-meta-input', "Sugira uma meta de saúde preventiva SMART e concisa. Exemplo: 'Agendar o check-up anual com o clínico geral até o final do próximo mês' ou 'Realizar o autoexame de mama no primeiro dia de cada mês'.");
 }
 window.initPreventivaPage = initPreventivaPage;
 
-// --- Initialize Gemini AI ---
-try {
-    if (!process.env.API_KEY) {
-        throw new Error("API_KEY environment variable not set.");
+// --- INITIAL LOAD & GLOBAL EVENT LISTENERS ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Gemini AI
+    try {
+        if (process.env.API_KEY) {
+            window.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        } else {
+            console.error("API_KEY is not defined. AI features will be disabled.");
+        }
+    } catch(e) {
+        console.error("Error initializing GoogleGenAI. Check API key and configuration.", e);
     }
-    window.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-} catch (e) {
-    console.error(e);
-    window.showToast("Não foi possível inicializar a IA. A chave da API não foi encontrada.", "error");
-}
-
-
-// --- INITIALIZATION SCRIPT ---
-document.addEventListener('DOMContentLoaded', async () => {
-    // Initialize sidebar state on load
-    window.toggleSidebar(true);
-
-    // Initialize theme on load
-    window.loadTheme();
-
-    // Handle sidebar link clicks
-    document.querySelectorAll('.sidebar-link').forEach(link => {
-        link.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const pageId = (e.currentTarget as HTMLElement).dataset.page;
-            if (pageId === 'avaliacao-card') {
-                window.openContractModal();
-            } else if (pageId) {
-                await window.showPage(pageId);
-            }
-        });
-    });
-
-    // Handle sidebar toggle click
-    document.getElementById('sidebar-toggle')?.addEventListener('click', () => window.toggleSidebar());
     
-    // Handle theme toggle click
-    document.getElementById('theme-toggle')?.addEventListener('click', () => {
+    // Setup Sidebar
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => toggleSidebar());
+        toggleSidebar(true);
+    }
+
+    // Setup Theme
+    loadTheme();
+    const themeToggle = document.getElementById('theme-toggle');
+    themeToggle?.addEventListener('click', () => {
         const isDark = document.documentElement.classList.toggle('dark-mode');
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        window.updateThemeToggleButtonIcon(isDark);
+        updateThemeToggleButtonIcon(isDark);
     });
 
-    // Handle rain sound toggle click
-    document.getElementById('rain-sound-toggle')?.addEventListener('click', window.toggleRainSound);
-    
-    // --- Contract Modal ---
-    document.getElementById('contract-modal-close-btn')?.addEventListener('click', window.closeContractModal);
-    document.getElementById('contract-modal-cancel-btn')?.addEventListener('click', window.closeContractModal);
-    document.getElementById('contract-modal-save-btn')?.addEventListener('click', window.saveContractData);
-    document.getElementById('contract-modal-print-btn')?.addEventListener('click', window.printContract);
-    const contractModal = document.getElementById('contract-modal');
-    if (contractModal) {
-        contractModal.addEventListener('click', (e) => {
-            if (e.target === contractModal) window.closeContractModal();
-        });
-        addAIButtonListener('contract-commitment-ai-btn', 'contract-commitment', 'Sugira um parágrafo para um contrato de compromisso pessoal focado em autodesenvolvimento e bem-estar.');
-        addAIButtonListener('contract-goals-ai-btn', 'contract-goals', 'Sugira 3 metas SMART para um contrato de compromisso pessoal, abrangendo as áreas física, mental e financeira.');
-    }
-    
-    // --- Indicator Chart Modal ---
-    document.getElementById('indicator-chart-modal-close-btn')?.addEventListener('click', window.closeIndicatorChartModal);
-    document.getElementById('indicator-chart-modal-cancel-btn')?.addEventListener('click', window.closeIndicatorChartModal);
-    const indicatorChartModal = document.getElementById('indicator-chart-modal');
-    if(indicatorChartModal) {
-         indicatorChartModal.addEventListener('click', (e) => {
-            if(e.target === indicatorChartModal) window.closeIndicatorChartModal();
-        });
-    }
-
-    // --- SIDEBAR SEARCH FUNCTIONALITY ---
-    const searchInput = document.getElementById('sidebar-search') as HTMLInputElement;
-    const sidebar = document.getElementById('sidebar-menu');
-    const sidebarLinksContainer = sidebar?.querySelector('.sidebar-links');
-    const noResultsMessage = sidebar?.querySelector('.sidebar-no-results') as HTMLElement;
-
-    if (searchInput && sidebarLinksContainer && noResultsMessage && sidebar) {
-        const sidebarLinks = Array.from(sidebarLinksContainer.querySelectorAll('li'));
-
-        searchInput.addEventListener('input', () => {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            let visibleLinks = 0;
-
-            sidebarLinks.forEach(li => {
-                const link = li.querySelector('a');
-                if (!link) return;
-                
-                const textElement = link.querySelector('.sidebar-text');
-                const linkText = textElement ? (textElement.textContent || '').toLowerCase() : '';
-                const linkTitle = (link.getAttribute('title') || '').toLowerCase();
-
-                if (linkText.includes(searchTerm) || linkTitle.includes(searchTerm)) {
-                    (li as HTMLElement).style.display = '';
-                    visibleLinks++;
-                } else {
-                    (li as HTMLElement).style.display = 'none';
-                }
-            });
-
-            noResultsMessage.style.display = visibleLinks === 0 ? 'block' : 'none';
-        });
-
-        searchInput.addEventListener('focus', () => {
-            if (sidebar.classList.contains('collapsed')) {
-                window.toggleSidebar();
-            }
-        });
-    }
-
-    // --- Initial Page Load ---
-    const pageIdFromHash = window.location.hash.substring(1);
-    const validPageIds = Object.keys(pageInitializers);
-    const initialPageId = pageIdFromHash && validPageIds.includes(pageIdFromHash) ? pageIdFromHash : 'inicio';
-    await window.showPage(initialPageId, true);
-
-    // --- Initialize Rain Sound ---
+    // Setup Rain Sound
+    const rainSoundToggle = document.getElementById('rain-sound-toggle');
+    rainSoundToggle?.addEventListener('click', toggleRainSound);
     if (localStorage.getItem('rainSoundPlaying') === 'true') {
-        const rainAudio = document.getElementById('rain-sound') as HTMLAudioElement;
-        const rainButton = document.getElementById('rain-sound-toggle');
-        if (rainAudio && rainButton) {
-            rainAudio.play().then(() => {
-                rainButton.innerHTML = '<i class="fas fa-stop-circle"></i>';
-                rainButton.setAttribute('aria-label', 'Desativar som de chuva');
-            }).catch(e => {
-                console.log("Autoplay was prevented by the browser. User must click to start rain sound.");
-                localStorage.setItem('rainSoundPlaying', 'false'); // Reset state
-            });
-        }
+        // We wait for a user interaction to start audio context,
+        // so we don't auto-play on load but can set the button state if needed.
     }
+    
+    // Setup Contract Modal
+    document.querySelector('[data-page="contrato"]')?.addEventListener('click', (e) => {
+         e.preventDefault();
+         window.location.hash = 'contrato';
+    });
+    document.getElementById('contract-modal-close-btn')?.addEventListener('click', closeContractModal);
+    document.getElementById('contract-modal-cancel-btn')?.addEventListener('click', closeContractModal);
+    document.getElementById('contract-modal-save-btn')?.addEventListener('click', saveContractData);
+    document.getElementById('contract-modal-print-btn')?.addEventListener('click', printContract);
+    addAIButtonListener('contract-commitment-ai-btn', 'contract-commitment', 'Sugira um parágrafo inspirador para um contrato de compromisso pessoal focado em autocuidado e desenvolvimento contínuo.');
+    addAIButtonListener('contract-goals-ai-btn', 'contract-goals', 'Com base no livro "Pequenos Passos para uma Vida Extraordinária", sugira 3 metas SMART (Específicas, Mensuráveis, Atingíveis, Relevantes, Temporais), uma para saúde física, uma para financeira e uma para familiar.');
+    
+    // Setup Sidebar Search
+    const searchInput = document.getElementById('sidebar-search') as HTMLInputElement;
+    const sidebarLinks = document.querySelectorAll('.sidebar-links .sidebar-link');
+    const noResultsEl = document.querySelector('.sidebar-no-results') as HTMLElement;
+
+    searchInput?.addEventListener('input', () => {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        let found = false;
+        sidebarLinks.forEach(link => {
+            const text = link.textContent?.toLowerCase() || '';
+            const match = text.includes(searchTerm);
+            (link.parentElement as HTMLElement).classList.toggle('is-hidden', !match);
+            if(match) found = true;
+        });
+        if (noResultsEl) noResultsEl.style.display = found ? 'none' : 'block';
+    });
+
+    // Delegated listener for back buttons inside main content
+    const mainContent = document.getElementById('main-content');
+    mainContent?.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const button = target.closest('button[data-page], a[data-page], .back-button[data-target-page]');
+        if (button) {
+            e.preventDefault();
+            const page = button.getAttribute('data-page') || button.getAttribute('data-target-page');
+            if (page) {
+                window.location.hash = page;
+            }
+        }
+    });
+
+    // Initialize Router
+    window.addEventListener('hashchange', router);
+    window.addEventListener('popstate', router); // Handles browser back/forward
+    router(); // Load initial page based on hash
 });

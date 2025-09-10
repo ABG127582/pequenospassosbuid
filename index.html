@@ -33,17 +33,18 @@
             <input type="text" id="sidebar-search" placeholder="Buscar..." aria-label="Buscar na navegação">
         </div>
         <ul class="sidebar-links">
-            <li><a href="#" title="Início" class="sidebar-link" data-page="inicio"><i class="fas fa-home fa-fw"></i><span class="sidebar-text">Início</span></a></li>
-            <li><a href="#" title="Saúde Física" class="sidebar-link" data-page="fisica"><i class="fas fa-heartbeat fa-fw"></i><span class="sidebar-text">Física</span></a></li>
-            <li><a href="#" title="Saúde Mental" class="sidebar-link" data-page="mental"><i class="fas fa-brain fa-fw"></i><span class="sidebar-text">Mental</span></a></li>
-            <li><a href="#" title="Saúde Financeira" class="sidebar-link" data-page="financeira"><i class="fas fa-dollar-sign fa-fw"></i><span class="sidebar-text">Financeira</span></a></li>
-            <li><a href="#" title="Saúde Familiar" class="sidebar-link" data-page="familiar"><i class="fas fa-users fa-fw"></i><span class="sidebar-text">Familiar</span></a></li>
-            <li><a href="#" title="Saúde Profissional" class="sidebar-link" data-page="profissional"><i class="fas fa-briefcase fa-fw"></i><span class="sidebar-text">Profissional</span></a></li>
-            <li><a href="#" title="Saúde Social" class="sidebar-link" data-page="social"><i class="fas fa-comments fa-fw"></i><span class="sidebar-text">Social</span></a></li>
-            <li><a href="#" title="Saúde Espiritual" class="sidebar-link" data-page="espiritual"><i class="fas fa-om fa-fw"></i><span class="sidebar-text">Espiritual</span></a></li>
-            <li><a href="#" title="Saúde Preventiva" class="sidebar-link" data-page="preventiva"><i class="fas fa-shield-alt fa-fw"></i><span class="sidebar-text">Preventiva</span></a></li>
-            <li><a href="#" title="Contrato de Compromisso" class="sidebar-link" data-page="avaliacao-card"><i class="fas fa-file-signature fa-fw"></i><span class="sidebar-text">Contrato</span></a></li>
-            <li><a href="#" title="Planejamento e Tarefas" class="sidebar-link" data-page="planejamento-diario"><i class="fas fa-tasks fa-fw"></i><span class="sidebar-text">Planejamento</span></a></li>
+            <li><a href="#inicio" title="Início" class="sidebar-link" data-page="inicio"><i class="fas fa-home fa-fw"></i><span class="sidebar-text">Início</span></a></li>
+            <li><a href="#fisica" title="Saúde Física" class="sidebar-link" data-page="fisica"><i class="fas fa-heartbeat fa-fw"></i><span class="sidebar-text">Física</span></a></li>
+            <li><a href="#mental" title="Saúde Mental" class="sidebar-link" data-page="mental"><i class="fas fa-brain fa-fw"></i><span class="sidebar-text">Mental</span></a></li>
+            <li><a href="#financeira" title="Saúde Financeira" class="sidebar-link" data-page="financeira"><i class="fas fa-dollar-sign fa-fw"></i><span class="sidebar-text">Financeira</span></a></li>
+            <li><a href="#familiar" title="Saúde Familiar" class="sidebar-link" data-page="familiar"><i class="fas fa-users fa-fw"></i><span class="sidebar-text">Familiar</span></a></li>
+            <li><a href="#profissional" title="Saúde Profissional" class="sidebar-link" data-page="profissional"><i class="fas fa-briefcase fa-fw"></i><span class="sidebar-text">Profissional</span></a></li>
+            <li><a href="#social" title="Saúde Social" class="sidebar-link" data-page="social"><i class="fas fa-comments fa-fw"></i><span class="sidebar-text">Social</span></a></li>
+            <li><a href="#espiritual" title="Saúde Espiritual" class="sidebar-link" data-page="espiritual"><i class="fas fa-om fa-fw"></i><span class="sidebar-text">Espiritual</span></a></li>
+            <li><a href="#preventiva" title="Saúde Preventiva" class="sidebar-link" data-page="preventiva"><i class="fas fa-shield-alt fa-fw"></i><span class="sidebar-text">Preventiva</span></a></li>
+            <li><a href="#contrato" title="Contrato de Compromisso" class="sidebar-link" data-page="contrato"><i class="fas fa-file-signature fa-fw"></i><span class="sidebar-text">Contrato</span></a></li>
+            <li><a href="#planejamento-diario" title="Planejamento Diário" class="sidebar-link" data-page="planejamento-diario"><i class="fas fa-calendar-check fa-fw"></i><span class="sidebar-text">Planejamento</span></a></li>
+            <li><a href="#tarefas" title="Gerenciar Tarefas" class="sidebar-link" data-page="tarefas"><i class="fas fa-tasks fa-fw"></i><span class="sidebar-text">Tarefas</span></a></li>
         </ul>
         <div class="sidebar-no-results" style="display: none;"><span class="sidebar-text">Nenhum resultado.</span></div>
     </nav>
@@ -59,7 +60,7 @@
     <button id="rain-sound-toggle" class="fab-button rain-sound-button" aria-label="Tocar som de chuva">
         <i class="fas fa-cloud-rain"></i>
     </button>
-    <audio id="rain-sound" src="https://www.soundjay.com/nature/sounds/rain-03.mp3" loop></audio>
+    <audio id="rain-sound" src="https://www.soundjay.com/nature/sounds/rain-03.mp3"></audio>
 
     <!-- Contract Modal -->
     <div id="contract-modal" class="modal-container" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="contract-modal-title-static">
