@@ -8,8 +8,8 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
     return {
       plugins: [basicSsl()],
       define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        // Standardize on using API_KEY from the environment.
+        'process.env.API_KEY': JSON.stringify(env.API_KEY),
       },
       resolve: {
         alias: {

@@ -19,10 +19,10 @@
                     </ul>
                 </details>
                 <details>
-                    <summary><svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>Poupança e Investimentos</summary>
+                    <summary><svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>Investimentos</summary>
                     <ul>
                         <li><a href="#pdca-financeira-reserva" class="mind-map-button">Criação de Reserva de Emergência (3-6 meses) [PDCA]</a></li>
-                        <li>Definição de Metas de Poupança (curto, médio, longo prazo)</li>
+                        <li>Definição de Metas de Investimentos (curto, médio, longo prazo)</li>
                         <li><a href="#pdca-financeira-investimentos" class="mind-map-button">Introdução a Tipos de Investimentos (Renda Fixa) [PDCA]</a></li>
                     </ul>
                 </details>
@@ -63,6 +63,24 @@
                     <i class="fas fa-book-open"></i> Ler o Relatório de Saúde Financeira
                 </button>
             </section>
+            
+            <section id="gerador-orcamento" class="content-section">
+                <h2 class="section-title">Gerador de Orçamento Inteligente</h2>
+                <p>Insira sua renda mensal líquida abaixo e a IA irá gerar uma sugestão de orçamento baseada na regra 50/30/20 (50% para necessidades, 30% para desejos e 20% para metas financeiras).</p>
+                <div class="orcamento-form-group">
+                    <label for="renda-mensal-input">Sua Renda Mensal Líquida (R$):</label>
+                    <input type="number" id="renda-mensal-input" placeholder="Ex: 5000">
+                    <button id="generate-orcamento-btn" class="standard-button">
+                        <i class="fas fa-robot"></i> Gerar Orçamento
+                    </button>
+                </div>
+                <div id="orcamento-loading" style="display: none; text-align: center; margin: 20px 0;">
+                    <i class="fas fa-spinner fa-spin"></i> Gerando sugestão...
+                </div>
+                <div id="orcamento-output">
+                    <!-- O orçamento gerado pela IA será inserido aqui -->
+                </div>
+            </section>
 
             <section id="metas-financeiras" class="form-section content-section">
                 <h2 class="section-title">Objetivos Financeiros</h2>
@@ -102,7 +120,7 @@
             </section>
         </main>
         <div class="back-button-wrapper">
-            <button class="standard-button back-button"><i class="fas fa-arrow-left"></i> Voltar ao Início</button>
+            <button class="standard-button back-button" data-page="inicio"><i class="fas fa-arrow-left"></i> Voltar ao Início</button>
         </div>
         <footer><p>© 2025 Pequenos Passos para uma Vida Extraordinária</p></footer>
     </div>

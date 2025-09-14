@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@google/genai": "^1.5.1",
-    "react": "^19.1.0",
     "dompurify": "^3.1.6"
   },
   "devDependencies": {

@@ -1,5 +1,3 @@
-
-
 <div class="page-section" id="page-fisica">
     <div class="container">
         <header>
@@ -158,7 +156,7 @@
                 </div>
                 <form id="exercise-protocol-form" class="add-exercise-form">
                     <div class="form-grid-exercise">
-                        <div class="input-wrapper">
+                        <div class="input-wrapper input-mic-wrapper" id="wrapper-exercise-name-input">
                             <input type="text" id="exercise-name-input" required placeholder="Nome do Exercício">
                              <button type="button" id="exercise-name-ai-btn" class="ai-suggestion-btn" title="Sugerir com IA"><i class="fas fa-wand-magic-sparkles"></i><i class="fas fa-spinner fa-spin"></i></button>
                         </div>
@@ -189,13 +187,50 @@
                             <option value="2">Razoável</option>
                             <option value="1">Ruim</option>
                         </select>
-                         <textarea id="sleep-notes-input" placeholder="Notas (ex: acordei durante a noite, sonho vívido...)" rows="1"></textarea>
+                         <div class="input-mic-wrapper textarea-wrapper" id="wrapper-sleep-notes-input">
+                            <textarea id="sleep-notes-input" placeholder="Notas (ex: acordei durante a noite, sonho vívido...)" rows="1"></textarea>
+                        </div>
                     </div>
                     <button type="submit" class="standard-button small-button">Salvar Registro de Sono</button>
                 </form>
                 <div id="last-sleep-entry" class="last-entry-display">
                     <!-- Último registro de sono será exibido aqui -->
                 </div>
+            </section>
+            
+            <section id="protocolo-otimizacao-sono" class="content-section sleep-protocol-section">
+                <h2 class="section-title">Protocolo de Otimização do Sono: A Base da Saúde</h2>
+                <p>O sono não é um estado passivo, mas um processo ativo essencial para a desintoxicação cerebral (sistema glinfático), consolidação da memória e regulação hormonal. Otimizar o sono é a intervenção mais poderosa para melhorar a saúde física e mental.</p>
+
+                <h3>O Sabotador Moderno: O Impacto da Luz</h3>
+                <p>Nosso corpo é governado por um relógio biológico interno, o <strong>ritmo circadiano</strong>. O principal sinal que sincroniza este relógio é a luz. A exposição à luz artificial à noite, especialmente a <strong>luz azul</strong> (de telemóveis, tablets, computadores), é o supressor mais potente da <strong>melatonina</strong>, a hormona que sinaliza a noite biológica e "abre a porta" para o sono. Estudos mostram que apenas 2 horas de exposição a um ecrã podem diminuir a melatonina em até 55% e atrasar o início do sono.</p>
+
+                <h3>Estratégias Práticas (O Protocolo)</h3>
+                <ul class="protocol-list">
+                    <li class="protocol-item">
+                        <h4><i class="fas fa-lightbulb"></i> Disciplina da Luz</h4>
+                        <ul>
+                            <li><strong>Noite:</strong> Evite rigorosamente a exposição a ecrãs nas 2-3 horas antes de deitar. Se for inevitável, use óculos que bloqueiam a luz azul e ative os filtros de luz noturna nos seus dispositivos.</li>
+                            <li><strong>Dia:</strong> Maximize a exposição à luz solar na primeira metade do dia. Isso ancora firmemente o seu ritmo circadiano, reforçando o sinal de vigília e, consequentemente, o de sono mais tarde.</li>
+                        </ul>
+                    </li>
+                    <li class="protocol-item">
+                        <h4><i class="fas fa-bed"></i> Santuário do Sono</h4>
+                        <ul>
+                            <li><strong>Temperatura:</strong> Mantenha o quarto fresco. Uma ligeira descida na temperatura corporal é um sinal para o início do sono.</li>
+                            <li><strong>Escuridão:</strong> O quarto deve ser o mais escuro possível. Use cortinas opacas (<em>blackout</em>) e cubra todas as fontes de luz.</li>
+                            <li><strong>Silêncio:</strong> Minimize o ruído. Considere usar tampões para os ouvidos ou um gerador de ruído branco.</li>
+                        </ul>
+                    </li>
+                    <li class="protocol-item">
+                        <h4><i class="fas fa-book-reader"></i> Rituais de Relaxamento</h4>
+                        <ul>
+                            <li><strong>Horário Consistente:</strong> Mantenha um horário de deitar e levantar consistente, mesmo aos fins de semana.</li>
+                            <li><strong>Ritual de "Desligar":</strong> Crie uma rotina de 30-60 minutos antes de dormir com atividades relaxantes: ler um livro físico, meditar, alongamentos leves ou tomar um banho quente.</li>
+                            <li><strong>Evitar Estimulantes:</strong> Evite cafeína a partir do início da tarde e álcool perto da hora de deitar, pois ele perturba a arquitetura do sono.</li>
+                        </ul>
+                    </li>
+                </ul>
             </section>
 
              <section id="biomarcadores-performance" class="content-section">
@@ -240,7 +275,7 @@
             
         </main>
         <div class="back-button-wrapper">
-            <button class="standard-button back-button"><i class="fas fa-arrow-left"></i> Voltar ao Início</button>
+            <button class="standard-button back-button" data-page="inicio"><i class="fas fa-arrow-left"></i> Voltar ao Início</button>
         </div>
         <footer><p>© 2025 Pequenos Passos para uma Vida Extraordinária</p></footer>
     </div>

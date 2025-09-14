@@ -13,7 +13,7 @@ This contains everything you need to run and deploy your app.
 2.  **Set up environment variables:**
     Create a file named `.env` in the root of the project. This file is for local development and should **not** be committed to Git.
     ```
-    GEMINI_API_KEY=YOUR_API_KEY_HERE
+    API_KEY=YOUR_API_KEY_HERE
     ```
     Replace `YOUR_API_KEY_HERE` with your actual key from Google AI Studio.
 3.  **Run the app:**
@@ -31,7 +31,7 @@ To fix this, you must configure your deployment environment (like GitHub Pages) 
 1.  **Add your API key to GitHub Secrets:**
     *   In your GitHub repository, go to `Settings` > `Secrets and variables` > `Actions`.
     *   Click `New repository secret`.
-    *   Name the secret `GEMINI_API_KEY`.
+    *   Name the secret `API_KEY`.
     *   Paste your API key into the value field.
 
 2.  **Use the secret in a build workflow:**
@@ -43,14 +43,14 @@ To fix this, you must configure your deployment environment (like GitHub Pages) 
     - name: Build project
       run: npm run build
       env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        API_KEY: ${{ secrets.API_KEY }}
     ```
 This process ensures your API key remains secure while being available to your application when it's built for deployment.
 
 ## Troubleshooting
 
-*   **AI features not working on deployed site:** This is almost always because the `GEMINI_API_KEY` was not available during the build process. Follow the steps in the "Deployment" section.
+*   **AI features not working on deployed site:** This is almost always because the `API_KEY` was not available during the build process. Follow the steps in the "Deployment" section.
 *   **AI features not working locally:**
     *   Ensure you have created a `.env` file in the project root.
-    *   Make sure the variable is named exactly `GEMINI_API_KEY`.
+    *   Make sure the variable is named exactly `API_KEY`.
     *   Restart the development server (`npm run dev`) after changing the `.env` file.
