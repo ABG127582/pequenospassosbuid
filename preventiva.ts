@@ -2,6 +2,8 @@ import DOMPurify from 'dompurify';
 
 import { showToast, saveItems, loadItems } from './utils';
 
+declare const Chart: any;
+
 export function initPreventivaPage() {
     const indicatorConfig: { [key: string]: any } = {
         'glicemia': { name: 'Glicemia em Jejum', unit: 'mg/dL', min: 50, max: 150, zones: [{ to: 69, color: '#f6c23e', status: 'Atenção', tip: 'Hipoglicemia' }, { to: 99, color: '#1cc88a', status: 'Normal', tip: 'Normal' }, { to: 125, color: '#f6c23e', status: 'Atenção', tip: 'Pré-Diabetes' }, { to: 150, color: '#e74a3b', status: 'Alerta', tip: 'Diabetes' }] },

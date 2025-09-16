@@ -197,7 +197,7 @@ async function getAISuggestionForInput(prompt: string, targetInput: HTMLInputEle
 // --- App Initialization & Routing ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    const mainContent = document.getElementById('main-content');
+    const pages = document.querySelectorAll<HTMLElement>('.page-container, .page-section');
     const navLinks = document.querySelectorAll<HTMLElement>('.sidebar-links a');
     const navSummaries = document.querySelectorAll<HTMLElement>('.sidebar-links summary');
     const sidebar = document.getElementById('sidebar-menu');
@@ -223,37 +223,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     
-    const router = async () => {
+    const router = () => {
         const hash = window.location.hash.substring(1);
         let pageKey = hash || 'inicio';
+        const pageId = `page-${pageKey}`;
 
-        // Check if the page key is valid
-        if (!pageHierarchy[pageKey]) {
+        if (!document.getElementById(pageId)) {
             pageKey = 'inicio';
         }
 
-        if (!mainContent) {
-            console.error('Main content area not found!');
-            return;
-        }
-
-        try {
-            const response = await fetch(`/pages/${pageKey}.html`);
-            if (!response.ok) {
-                throw new Error(`Page not found: ${pageKey}.html`);
-            }
-            const pageHtml = await response.text();
-            mainContent.innerHTML = DOMPurify.sanitize(pageHtml, { ADD_TAGS: ["details", "summary"], ADD_ATTR: ['open', 'data-page', 'data-page-parent', 'data-tooltip'] });
-
-            // Initialize any page-specific JavaScript
-            if (pageKey === 'tarefas') initTarefasPage();
-            else if (pageKey === 'espiritual') initEspiritualPage();
-            else if (pageKey === 'planejamento-diario') initPlanejamentoDiarioPage();
-            else if (pageKey === 'preventiva') initPreventivaPage();
-        } catch (error) {
-            console.error('Error loading page:', error);
-            mainContent.innerHTML = `<div class="container"><p>Error loading page. Please try again.</p></div>`;
-        }
+        pages.forEach(page => {
+            page.style.display = page.id === `page-${pageKey}` ? 'block' : 'none';
+        });
 
         updateBreadcrumbs(pageKey);
 
@@ -284,6 +265,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
+
+        // Initialize any page-specific JavaScript
+        if (pageKey === 'tarefas') initTarefasPage();
+        else if (pageKey === 'espiritual') initEspiritualPage();
+        else if (pageKey === 'planejamento-diario') initPlanejamentoDiarioPage();
+        else if (pageKey === 'preventiva') initPreventivaPage();
     };
 
     window.addEventListener('popstate', router);
