@@ -8,30 +8,7 @@ import { initPreventivaPage } from './preventiva';
 import { initPlanejamentoDiarioPage } from './planejamento-diario';
 import DOMPurify from 'dompurify';
 
-// Re-declare the global window interface to inform TypeScript about global functions
-// that we are defining and attaching to the window object.
-declare global {
-    interface Window {
-        showToast: (message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
-        saveItems: (storageKey: string, items: any) => void;
-        loadItems: (storageKey: string) => any;
-        getAISuggestionForInput: (prompt: string, targetInput: HTMLInputElement | HTMLTextAreaElement, button: HTMLButtonElement) => Promise<void>;
-        Chart: any; // Make Chart.js globally available
-    }
-}
-
-// --- Gemini AI Initialization ---
-const apiKey = process.env.API_KEY;
-let ai: GoogleGenAI;
-
-if (!apiKey) {
-    console.error("API key is missing. Please set API_KEY in your environment variables.");
-    document.addEventListener('DOMContentLoaded', () => {
-        document.body.innerHTML = '<div style="padding: 20px; text-align: center; font-family: sans-serif; color: #d93025;"><h1>Configuration Error</h1><p>The Google AI API key is not configured. Please contact support.</p></div>';
-    });
-} else {
-    ai = new GoogleGenAI({ apiKey });
-}
+import { showToast, saveItems, loadItems, getAISuggestionForInput } from './utils';
 
 // --- Page Hierarchy for Breadcrumbs and Active State ---
 const pageHierarchy: { [key: string]: { parent: string | null; title: string } } = {
@@ -220,13 +197,7 @@ async function getAISuggestionForInput(prompt: string, targetInput: HTMLInputEle
 // --- App Initialization & Routing ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Make global helpers available on the window object
-    window.showToast = showToast;
-    window.saveItems = saveItems;
-    window.loadItems = loadItems;
-    window.getAISuggestionForInput = getAISuggestionForInput;
-    
-    const pages = document.querySelectorAll<HTMLElement>('.page-container, .page-section');
+    const mainContent = document.getElementById('main-content');
     const navLinks = document.querySelectorAll<HTMLElement>('.sidebar-links a');
     const navSummaries = document.querySelectorAll<HTMLElement>('.sidebar-links summary');
     const sidebar = document.getElementById('sidebar-menu');
@@ -252,18 +223,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     
-    const router = () => {
+    const router = async () => {
         const hash = window.location.hash.substring(1);
         let pageKey = hash || 'inicio';
-        const pageId = `page-${pageKey}`;
 
-        if (!document.getElementById(pageId)) {
+        // Check if the page key is valid
+        if (!pageHierarchy[pageKey]) {
             pageKey = 'inicio';
         }
 
-        pages.forEach(page => {
-            page.style.display = page.id === `page-${pageKey}` ? 'block' : 'none';
-        });
+        if (!mainContent) {
+            console.error('Main content area not found!');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/pages/${pageKey}.html`);
+            if (!response.ok) {
+                throw new Error(`Page not found: ${pageKey}.html`);
+            }
+            const pageHtml = await response.text();
+            mainContent.innerHTML = DOMPurify.sanitize(pageHtml, { ADD_TAGS: ["details", "summary"], ADD_ATTR: ['open', 'data-page', 'data-page-parent', 'data-tooltip'] });
+
+            // Initialize any page-specific JavaScript
+            if (pageKey === 'tarefas') initTarefasPage();
+            else if (pageKey === 'espiritual') initEspiritualPage();
+            else if (pageKey === 'planejamento-diario') initPlanejamentoDiarioPage();
+            else if (pageKey === 'preventiva') initPreventivaPage();
+        } catch (error) {
+            console.error('Error loading page:', error);
+            mainContent.innerHTML = `<div class="container"><p>Error loading page. Please try again.</p></div>`;
+        }
 
         updateBreadcrumbs(pageKey);
 
@@ -294,12 +284,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
-
-        // Initialize any page-specific JavaScript
-        if (pageKey === 'tarefas') initTarefasPage();
-        else if (pageKey === 'espiritual') initEspiritualPage();
-        else if (pageKey === 'planejamento-diario') initPlanejamentoDiarioPage();
-        else if (pageKey === 'preventiva') initPreventivaPage();
     };
 
     window.addEventListener('popstate', router);

@@ -1,0 +1,106 @@
+<div class="page-section" id="page-tarefas">
+    <!-- Conteúdo de Tarefas.html (somente o body) será inserido aqui -->
+     <div class="container">
+        <header>
+            <h1><i class="fas fa-check-double" aria-hidden="true" style="margin-right: 10px;"></i>Lista de Tarefas</h1>
+            <div class="task-count" aria-live="polite">
+                <div class="count-item"><i class="fas fa-list-ul" aria-hidden="true"></i><span>Total: <strong id="total-count">0</strong></span></div>
+                <div class="count-item"><i class="fas fa-check-circle" aria-hidden="true"></i><span>Concluídas: <strong id="completed-count">0</strong></span></div>
+                <div class="count-item"><i class="fas fa-hourglass-half" aria-hidden="true"></i><span>Pendentes: <strong id="pending-count">0</strong></span></div>
+            </div>
+        </header>
+
+        <div class="task-page-layout">
+            <div class="task-main-content">
+                <div class="controls-bar">
+                    <div class="categories-container">
+                        <div class="categories" id="categories-list">
+                            <button class="category-tag add-new" id="add-category-btn" tabindex="0"><i class="fas fa-plus" aria-hidden="true"></i> Nova Categoria</button>
+                            <!-- Categorias serão adicionadas aqui por JS -->
+                        </div>
+                    </div>
+                    <div class="view-toggle">
+                        <button id="checklist-view-btn" class="view-btn active" aria-pressed="true" title="Visualização em Checklist"><i class="fas fa-list-check"></i> Checklist</button>
+                        <button id="table-view-btn" class="view-btn" aria-pressed="false" title="Visualização em Tabela"><i class="fas fa-table-list"></i> Tabela</button>
+                    </div>
+                </div>
+
+                <div class="search-filter">
+                    <div class="search-box">
+                        <label for="search-input" class="sr-only">Buscar tarefas</label>
+                        <input type="text" id="search-input" placeholder="Buscar por título ou descrição..." aria-describedby="search-instructions">
+                        <span id="search-instructions" class="sr-only">Digite para buscar tarefas.</span>
+                        <i class="fas fa-search search-icon" aria-hidden="true"></i>
+                    </div>
+                    <select class="filter-select" id="filter-select" aria-label="Filtrar tarefas">
+                        <option value="all">Mostrar Todas</option>
+                        <option value="pending">Pendentes</option>
+                        <option value="completed">Concluídas</option>
+                        <option value="overdue">Vencidas</option>
+                        <option value="high">Prioridade Alta</option>
+                        <option value="medium">Prioridade Média</option>
+                        <option value="low">Prioridade Baixa</option>
+                    </select>
+                </div>
+
+                <div class="task-input-group">
+                    <div class="task-input-wrapper input-wrapper">
+                        <label for="quick-task-input" class="sr-only">Título nova tarefa rápida</label>
+                        <input type="text" id="quick-task-input" placeholder="Digite o título da nova tarefa aqui..." class="task-input">
+                        <button type="button" id="quick-task-input-ai-btn" class="ai-suggestion-btn" title="Sugerir com IA"><i class="fas fa-wand-magic-sparkles"></i><i class="fas fa-spinner fa-spin"></i></button>
+                    </div>
+                    <button class="btn btn-primary" id="add-task-btn"><i class="fas fa-plus" aria-hidden="true"></i> Adicionar Tarefa</button>
+                </div>
+
+                <!-- Nova Visualização em Checklist -->
+                <div id="checklist-view-container">
+                    <!-- Conteúdo do checklist será renderizado aqui pelo JS -->
+                </div>
+
+                <!-- Visualização em Tabela Existente -->
+                <div class="table-wrapper" style="display: none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th scope="col" style="width: 5%; min-width: 50px;"><span class="sr-only">Status</span></th>
+                                <th scope="col" style="width: 40%; min-width: 200px;">Tarefa & Descrição</th>
+                                <th scope="col" style="width: 15%; min-width: 110px;">Vencimento</th>
+                                <th scope="col" style="width: 15%; min-width: 100px;">Prioridade</th>
+                                <th scope="col" style="width: 15%; min-width: 110px;">Categoria</th>
+                                <th scope="col" style="width: 10%; min-width: 100px; text-align: right;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="task-list">
+                            <!-- Tarefas serão adicionadas aqui por JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="empty-state-message" style="text-align: center; padding: 20px; display: none;">
+                    <p>Nenhuma tarefa encontrada. Tente adicionar uma nova tarefa ou ajustar seus filtros!</p>
+                </div>
+
+                <div class="pagination">
+                    <div class="page-info" aria-live="polite">Mostrando 0-0 de 0</div>
+                    <div class="pagination-btns">
+                        <button class="btn btn-outline btn-icon" id="prev-page-btn" aria-label="Página anterior" disabled><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+                        <span class="page-number" aria-live="polite">Página <span id="current-page">1</span> / <span id="total-pages">1</span></span>
+                        <button class="btn btn-outline btn-icon" id="next-page-btn" aria-label="Próxima página" disabled><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="task-sidebar-analytics">
+                 <section class="content-section" id="task-analytics">
+                    <h2 class="section-title">Análise de Tarefas</h2>
+                    <div id="category-chart-container">
+                        <canvas id="category-chart"></canvas>
+                    </div>
+                    <p id="chart-no-data" style="display: none; text-align:center; color: var(--text-color-muted);">Não há tarefas para exibir no gráfico.</p>
+                </section>
+            </div>
+        </div>
+
+         <div class="back-button-wrapper">
+            <button class="standard-button back-button" data-page="inicio"><i class="fas fa-arrow-left"></i> Voltar ao Início</button>
+        </div>

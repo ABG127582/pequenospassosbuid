@@ -1,13 +1,6 @@
 import DOMPurify from 'dompurify';
 
-// Re-declare window interface for global functions from index.tsx
-declare global {
-    interface Window {
-        showToast: (message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
-        saveItems: (storageKey: string, items: any) => void;
-        loadItems: (storageKey: string) => any;
-    }
-}
+import { showToast, saveItems, loadItems } from './utils';
 
 export function initEspiritualPage() {
     const practicesList = document.getElementById('espiritual-praticas-list') as HTMLUListElement;
@@ -21,7 +14,7 @@ export function initEspiritualPage() {
 
         const today = new Date().toISOString().split('T')[0];
         const storageKey = `espiritual-checklist-${today}`;
-        let completedPractices = window.loadItems(storageKey) || {};
+        let completedPractices = loadItems(storageKey) || {};
 
         const renderPractices = () => {
             practicesList.innerHTML = '';
@@ -44,7 +37,7 @@ export function initEspiritualPage() {
                 const practiceId = target.dataset.id;
                 if (practiceId) {
                     completedPractices[practiceId] = target.checked;
-                    window.saveItems(storageKey, completedPractices);
+                    saveItems(storageKey, completedPractices);
                     
                     const span = target.nextElementSibling;
                     if (span) {
@@ -67,13 +60,13 @@ export function initEspiritualPage() {
         const getTodayKey = () => JOURNAL_PREFIX + new Date().toISOString().split('T')[0];
 
         const loadTodaysEntry = () => {
-            gratitudeEntry.value = window.loadItems(getTodayKey()) || '';
+            gratitudeEntry.value = loadItems(getTodayKey()) || '';
         };
 
         const saveEntry = () => {
             const content = gratitudeEntry.value.trim();
-            window.saveItems(getTodayKey(), content);
-            window.showToast('Entrada de gratidão salva!', 'success');
+            saveItems(getTodayKey(), content);
+            showToast('Entrada de gratidão salva!', 'success');
         };
 
         const renderPastEntries = () => {
@@ -81,7 +74,7 @@ export function initEspiritualPage() {
                 .filter(key => key.startsWith(JOURNAL_PREFIX))
                 .map(key => ({
                     date: key.replace(JOURNAL_PREFIX, ''),
-                    content: window.loadItems(key) || ''
+                    content: loadItems(key) || ''
                 }))
                 .sort((a, b) => b.date.localeCompare(a.date));
 

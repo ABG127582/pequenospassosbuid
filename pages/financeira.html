@@ -1,0 +1,122 @@
+<div class="page-section" id="page-financeira">
+    <div class="container">
+        <header>
+             <h1>Planejamento de Saúde Financeira</h1>
+        </header>
+        <main>
+            <section class="mind-map-section content-section">
+                <h2 class="section-title">Planejamento / Mapa Mental de Saúde Financeira</h2>
+                <p style="margin-bottom: 20px; font-size: 0.9rem;">Clique nos tópicos para expandir ou nos links <span style="color:var(--color-financeira); font-weight: 500;">[PDCA]</span> para ver planos detalhados.</p>
+                <details open>
+                    <summary><svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>Orçamento e Controle de Gastos</summary>
+                    <ul>
+                        <li>Clareza dos 3Gs (Ganho, Gasto, Guardo)</li>
+                        <li><a href="#pdca-financeira-orcamento" class="mind-map-button">Criação de Orçamento e Aplicação da Regra 50-15-35 [PDCA]</a></li>
+                        <li>Monitoramento de Receitas e Despesas</li>
+                        <li>Identificação e Redução de Gastos Supérfluos</li>
+                    </ul>
+                </details>
+                <details>
+                    <summary><svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>Investimentos</summary>
+                    <ul>
+                        <li><a href="#pdca-financeira-reserva" class="mind-map-button">Criação de Reserva de Emergência (3-6 meses) [PDCA]</a></li>
+                        <li>Definição de Metas de Investimentos (curto, médio, longo prazo)</li>
+                        <li><a href="#pdca-financeira-investimentos" class="mind-map-button">Introdução a Tipos de Investimentos (Renda Fixa) [PDCA]</a></li>
+                    </ul>
+                </details>
+                <details>
+                    <summary><svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>Gestão de Dívidas</summary>
+                    <ul>
+                        <li>Diagnóstico de Dívidas Existentes</li>
+                        <li>Estratégias de Quitação (Avalanche vs. Bola de Neve)</li>
+                        <li>Prevenção de Novas Dívidas</li>
+                    </ul>
+                </details>
+                <details>
+                    <summary><svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>Psicologia do Dinheiro (Economia Comportamental)</summary>
+                    <ul>
+                         <li>Compreender e mitigar vieses:</li>
+                         <ul style="padding-left: 20px;">
+                             <li>Viés do Presente (preferir recompensa imediata)</li>
+                             <li>Aversão à Perda (medo de "realizar" prejuízo)</li>
+                             <li>Custo Afundado (insistir no erro)</li>
+                         </ul>
+                         <li>Cultivar a Mentalidade de Abundância vs. Escassez</li>
+                    </ul>
+                </details>
+                 <details>
+                    <summary><svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>Planejamento para o Futuro</summary>
+                    <ul>
+                        <li>Aposentadoria e Previdência</li>
+                        <li>Seguros (Vida, Saúde, Patrimonial)</li>
+                        <li>Educação Financeira Contínua</li>
+                    </ul>
+                </details>
+            </section>
+
+            <section class="content-section">
+                <h2 class="section-title">Leitura Complementar</h2>
+                <p>Aprofunde seus conhecimentos sobre os pilares da saúde financeira com nosso guia completo. Este relatório abrangente aborda desde o diagnóstico financeiro até estratégias de investimento e a psicologia por trás das nossas decisões monetárias, com foco no cenário brasileiro.</p>
+                <button class="standard-button" data-page="leitura-guia-financeira">
+                    <i class="fas fa-book-open"></i> Ler o Relatório de Saúde Financeira
+                </button>
+            </section>
+
+            <section id="gerador-orcamento" class="content-section">
+                <h2 class="section-title">Gerador de Orçamento Inteligente</h2>
+                <p>Insira sua renda mensal líquida abaixo e a IA irá gerar uma sugestão de orçamento baseada na regra 50/30/20 (50% para necessidades, 30% para desejos e 20% para metas financeiras).</p>
+                <div class="orcamento-form-group">
+                    <label for="renda-mensal-input">Sua Renda Mensal Líquida (R$):</label>
+                    <input type="number" id="renda-mensal-input" placeholder="Ex: 5000">
+                    <button id="generate-orcamento-btn" class="standard-button">
+                        <i class="fas fa-robot"></i> Gerar Orçamento
+                    </button>
+                </div>
+                <div id="orcamento-loading" style="display: none; text-align: center; margin: 20px 0;">
+                    <i class="fas fa-spinner fa-spin"></i> Gerando sugestão...
+                </div>
+                <div id="orcamento-output">
+                    <!-- O orçamento gerado pela IA será inserido aqui -->
+                </div>
+            </section>
+
+            <section id="metas-financeiras" class="form-section content-section">
+                <h2 class="section-title">Objetivos Financeiros</h2>
+                <ul id="financeira-metas-list" class="lista-planejamento"></ul>
+                <form id="financeira-metas-form">
+                    <label for="financeira-meta-input">Novo Objetivo:</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="financeira-meta-input" required placeholder="Ex: Criar reserva de emergência de R$5000">
+                        <button type="button" id="financeira-meta-input-ai-btn" class="ai-suggestion-btn" title="Sugerir com IA"><i class="fas fa-wand-magic-sparkles"></i><i class="fas fa-spinner fa-spin"></i></button>
+                    </div>
+                    <button type="submit" class="standard-button">Adicionar Objetivo</button>
+                </form>
+            </section>
+
+            <section id="pdca-financeira" class="pdca-integrated-section content-section">
+                 <header><h2 class="section-title">Ciclo PDCA para Saúde Financeira</h2></header>
+                 <p class="subtitle">Use este espaço para planejar, executar, checar e ajustar suas ações focadas na saúde financeira.</p>
+
+                <div class="pdca-step">
+                    <h3><i class="fas fa-bullseye"></i> PLAN (Planejar)</h3>
+                    <p>Defina suas metas financeiras e como alcançá-las. Qual seu plano para organizar, poupar ou investir?</p>
+                     <!-- Placeholder para seções específicas de PDCA Financeira -->
+                    <div id="pdca-financeira-orcamento" class="pdca-item"><h4>PDCA: Criação de Orçamento</h4><p><em>Planejamento:</em> Listar todas as fontes de renda e todas as despesas fixas e variáveis. <em>Ação:</em> Utilizar planilha ou app para registrar e categorizar os gastos por um mês. <em>Checagem:</em> Analisar o fluxo de caixa, identificar onde o dinheiro está sendo gasto. <em>Ajuste:</em> Definir limites para categorias de gastos, cortar despesas desnecessárias.</p></div>
+                    <div id="pdca-financeira-reserva" class="pdca-item"><h4>PDCA: Reserva de Emergência</h4><p><em>Planejamento:</em> Definir meta para reserva (ex: 3-6 meses de despesas). <em>Ação:</em> Destinar um valor mensal fixo para a reserva. <em>Checagem:</em> Acompanhar o crescimento da reserva. <em>Ajuste:</em> Aumentar o valor poupado se possível, ou reduzir temporariamente em caso de imprevisto (e repor depois).</p></div>
+                     <div id="pdca-financeira-investimentos" class="pdca-item"><h4>PDCA: Iniciar Investimentos (Perfil Conservador)</h4><p><em>Planejamento:</em> Estudar opções de baixo risco (CDB, Tesouro Direto Selic, Fundos DI). <em>Ação:</em> Abrir conta em corretora, realizar o primeiro aporte. <em>Checagem:</em> Acompanhar a rentabilidade (sem neurose diária). <em>Ajuste:</em> Aumentar os aportes conforme a confiança e conhecimento aumentam.</p></div>
+                </div>
+            </section>
+
+            <section id="recursos-financeira" class="resources-section content-section">
+                <h2 class="section-title">Recursos Úteis para Saúde Financeira</h2>
+                <ul class="recursos-list">
+                    <li><a href="https://www.bcb.gov.br/cidadaniafinanceira" target="_blank" rel="noopener noreferrer">Cidadania Financeira (Banco Central do Brasil)</a></li>
+                    <li><a href="https://www.tesourodireto.com.br/" target="_blank" rel="noopener noreferrer">Tesouro Direto (Portal Oficial)</a></li>
+                    <li><a href="https://meubolsoemdia.com.br/" target="_blank" rel="noopener noreferrer">Meu Bolso em Dia (Plataforma Febraban e BC)</a></li>
+                    <li><a href="https://mepoupenaweb.uol.com.br/" target="_blank" rel="noopener noreferrer">Me Poupe! (Blog da Nathalia Arcuri)</a></li>
+                </ul>
+            </section>
+        </main>
+        <div class="back-button-wrapper">
+            <button class="standard-button back-button" data-page="inicio"><i class="fas fa-arrow-left"></i> Voltar ao Início</button>
+        </div>

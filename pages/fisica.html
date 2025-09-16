@@ -1,0 +1,279 @@
+<div class="page-section" id="page-fisica">
+    <div class="container">
+        <header>
+            <h1>Planejamento de Saúde Física</h1>
+        </header>
+        <main>
+            <section class="mind-map-section content-section">
+                 <h2 class="section-title">Planejamento / Mapa Mental de Saúde Física</h2>
+                 <p style="margin-bottom: 20px; font-size: 0.9rem;">Clique nos tópicos para expandir ou nos links <span style="color:var(--color-fisica); font-weight: 500;">[PDCA]</span> para ver planos detalhados.</p>
+                <details open>
+                    <summary class="tooltip" data-tooltip="Clique para expandir/recolher">
+                        <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        Pilar 1: Descanso (O Alicerce)
+                    </summary>
+                    <ul>
+                        <li>
+                            <details open>
+                                <summary>
+                                    <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    Sono Qualitativo
+                                </summary>
+                                <ul>
+                                    <li>Ritmo circadiano (exposição matinal ao sol ativa ciclo circadiano via retina)</li>
+                                    <li>Duração ideal (7-9h)</li>
+                                    <li>Santuário do Sono (escuro, silencioso, fresco)</li>
+                                    <li>Ritual de Desligamento (sem telas, leitura/meditação)</li>
+                                </ul>
+                            </details>
+                        </li>
+                        <li>
+                            <details>
+                                <summary>
+                                     <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                     Pausas Diárias e Estratégicas
+                                </summary>
+                                <ul>
+                                    <li>Micro pausas (a cada 25-50 min)</li>
+                                    <li>Pausas para descanso (almoço, fim de tarde)</li>
+                                    <li>Descanso Ativo (caminhadas leves)</li>
+                                </ul>
+                            </details>
+                        </li>
+                    </ul>
+                </details>
+                 <details id="alimentacao-fisica-details" open>
+                    <summary>
+                        <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        Pilar 2: Alimentação (O Combustível)
+                    </summary>
+                    <ul>
+                        <li>
+                            <details open>
+                                <summary><svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>Princípios Fundamentais</summary>
+                                <ul>
+                                    <li>Comida de Verdade (minimamente processada)</li>
+                                    <li>Densidade Nutricional</li>
+                                    <li>Jejum intermitente (16x8)</li>
+                                    <li>Hidratação Adequada: <span id="resultado-hidratacao-mapa" style="font-weight: bold;"></span>
+                                        <div class="hydration-calculator-inline">
+                                            <input type="number" id="peso-corporal-hidratacao-mapa" placeholder="Seu peso (kg)" style="width: 120px; margin-left: 5px;">
+                                            <button id="btn-calcular-hidratacao-mapa" class="small-button" style="margin-left: 5px;">Calcular</button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </details>
+                        </li>
+                        <li>
+                            <details open>
+                                <summary><svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>Alimentos Nutritivos e Funcionais</summary>
+                                <ul class="food-items-list">
+                                    <li><a href="#" class="food-link" data-page="food-gengibre">🍂 Gengibre</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-alho">🧄 Alho</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-brocolis">🥦 Brócolis</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-couveflor">🥦 Couve-flor</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-shitake">🍄 Shitake</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-lentilha">🌿 Lentilha</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-azeite">🌿 Azeite</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-morango">🍓 Morango</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-laranja">🍊 Laranja</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-maca">🍎 Maçã</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-cenoura">🥕 Cenoura</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-pimenta">🌶️ Pimenta</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-ovo">🥚 Ovo</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-vinagremaca">🍎 Vinagre de Maçã</a></li>
+                                </ul>
+                            </details>
+                        </li>
+                         <li>
+                            <details open>
+                                <summary><svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>Suplementação Baseada em Evidências</summary>
+                                 <ul class="food-items-list">
+                                    <li><a href="#" class="food-link" data-page="food-whey">💪 Whey Protein</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-creatina">💪 Creatina</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-curcuma">🍂 Cúrcuma</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-chaverde">🍵 Chá Verde</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-canela">🌿 Canela</a></li>
+                                    <li><a href="#" class="food-link" data-page="food-linhaca">🌰 Linhaça</a></li>
+                                </ul>
+                            </details>
+                        </li>
+                    </ul>
+                </details>
+                <details open>
+                    <summary><svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>Pilar 3: Exercício Físico (O Catalisador)</summary>
+                    <ul>
+                        <li><a href="#pdca-fisica-cardio" class="mind-map-button">Benefícios cardiorrespiratórios (Resistencia) [PDCA]</a></li>
+                        <li><a href="#pdca-fisica-massa" class="mind-map-button">Ganho de massa muscular (Força) [PDCA]</a></li>
+                        <li><a href="#pdca-fisica-mobilidade" class="mind-map-button">Mobilidade [PDCA]</a></li>
+                    </ul>
+                </details>
+                <details open>
+                    <summary><svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>Pilar 4: Gestão de Estresse Físico</summary>
+                    <ul>
+                        <li><a href="#pdca-fisica-estresse" class="mind-map-button">Gerenciamento do Estresse Físico [PDCA]</a></li>
+                    </ul>
+                </details>
+            </section>
+
+            <section class="content-section">
+                <h2 class="section-title">Leitura Complementar</h2>
+                 <p>Aprofunde seus conhecimentos sobre os pilares da saúde física com nosso guia completo. Ele aborda os sistemas simbióticos da saúde humana, desde a neurociência do sono até a modulação hormonal através do exercício, fornecendo um quadro unificado para a otimização e longevidade.</p>
+                <button class="standard-button" data-page="leitura-guia-fisica">
+                    <i class="fas fa-book-open"></i> Ler a Análise Científica da Saúde Física
+                </button>
+            </section>
+
+             <section id="recursos-uteis" class="resources-section content-section">
+                <h2 class="section-title">Recursos Úteis</h2>
+                <ul class="recursos-list">
+                    <li><a href="https://blueprint.bryanjohnson.com/" target="_blank" rel="noopener noreferrer">Protocolo Blueprint de Bryan Johnson (Otimização de Saúde)</a></li>
+                    <li><a href="https://www.gov.br/saude/pt-br/assuntos/saude-brasil/eu-quero-me-alimentar-melhor/guia-alimentar-para-a-populacao-brasileira" target="_blank" rel="noopener noreferrer">Guia Alimentar para a População Brasileira (Ministério da Saúde)</a></li>
+                    <li><a href="https://ge.globo.com/eu-atleta/" target="_blank" rel="noopener noreferrer">Eu Atleta (Dicas de Saúde e Exercícios)</a></li>
+                    <li><a href="https://www.who.int/news-room/fact-sheets/detail/physical-activity" target="_blank" rel="noopener noreferrer">Diretrizes da OMS sobre Atividade Física</a></li>
+                    <li><a href="https://examine.com/" target="_blank" rel="noopener noreferrer">Examine.com (Análise de Suplementos Baseada em Evidências)</a></li>
+                </ul>
+            </section>
+
+            <section id="protocolo-exercicios" class="form-section content-section">
+                <h2 class="section-title">Protocolo de Exercícios</h2>
+                <p>Construa e acompanhe seu protocolo de exercícios diário. O status de conclusão é reiniciado a cada dia.</p>
+                <div class="table-responsive">
+                    <table class="exercise-protocol-table">
+                        <thead>
+                            <tr>
+                                <th>Exercício</th>
+                                <th>Tipo</th>
+                                <th>Duração / Séries</th>
+                                <th>Status Hoje</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="exercise-protocol-list">
+                            <!-- Exercícios serão adicionados aqui via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <form id="exercise-protocol-form" class="add-exercise-form">
+                    <div class="form-grid-exercise">
+                        <div class="input-wrapper input-mic-wrapper" id="wrapper-exercise-name-input">
+                            <input type="text" id="exercise-name-input" required placeholder="Nome do Exercício">
+                             <button type="button" id="exercise-name-ai-btn" class="ai-suggestion-btn" title="Sugerir com IA"><i class="fas fa-wand-magic-sparkles"></i><i class="fas fa-spinner fa-spin"></i></button>
+                        </div>
+                        <select id="exercise-type-input">
+                            <option value="Cardio">Cardio</option>
+                            <option value="Força">Força</option>
+                            <option value="HIIT">HIIT</option>
+                            <option value="Flexibilidade">Flexibilidade</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                        <input type="text" id="exercise-duration-input" required placeholder="Ex: 30 min ou 3x12">
+                    </div>
+                    <button type="submit" class="standard-button small-button">Adicionar ao Protocolo</button>
+                </form>
+            </section>
+
+             <section id="monitoramento-sono" class="content-section">
+                <h2 class="section-title">Monitoramento do Sono</h2>
+                <p>Registre seus dados de sono diariamente para identificar padrões e otimizar seu descanso.</p>
+                <form id="sleep-log-form" class="form-section">
+                    <div class="sleep-form-grid">
+                        <input type="date" id="sleep-date-input" required>
+                        <input type="number" id="sleep-hours-input" step="0.1" placeholder="Horas dormidas (ex: 7.5)" required>
+                        <select id="sleep-quality-input" required>
+                            <option value="">Qualidade do Sono</option>
+                            <option value="4">Excelente</option>
+                            <option value="3">Bom</option>
+                            <option value="2">Razoável</option>
+                            <option value="1">Ruim</option>
+                        </select>
+                         <div class="input-mic-wrapper textarea-wrapper" id="wrapper-sleep-notes-input">
+                            <textarea id="sleep-notes-input" placeholder="Notas (ex: acordei durante a noite, sonho vívido...)" rows="1"></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="standard-button small-button">Salvar Registro de Sono</button>
+                </form>
+                <div id="last-sleep-entry" class="last-entry-display">
+                    <!-- Último registro de sono será exibido aqui -->
+                </div>
+            </section>
+
+            <section id="protocolo-otimizacao-sono" class="content-section sleep-protocol-section">
+                <h2 class="section-title">Protocolo de Otimização do Sono: A Base da Saúde</h2>
+                <p>O sono não é um estado passivo, mas um processo ativo essencial para a desintoxicação cerebral (sistema glinfático), consolidação da memória e regulação hormonal. Otimizar o sono é a intervenção mais poderosa para melhorar a saúde física e mental.</p>
+
+                <h3>O Sabotador Moderno: O Impacto da Luz</h3>
+                <p>Nosso corpo é governado por um relógio biológico interno, o <strong>ritmo circadiano</strong>. O principal sinal que sincroniza este relógio é a luz. A exposição à luz artificial à noite, especialmente a <strong>luz azul</strong> (de telemóveis, tablets, computadores), é o supressor mais potente da <strong>melatonina</strong>, a hormona que sinaliza a noite biológica e "abre a porta" para o sono. Estudos mostram que apenas 2 horas de exposição a um ecrã podem diminuir a melatonina em até 55% e atrasar o início do sono.</p>
+
+                <h3>Estratégias Práticas (O Protocolo)</h3>
+                <ul class="protocol-list">
+                    <li class="protocol-item">
+                        <h4><i class="fas fa-lightbulb"></i> Disciplina da Luz</h4>
+                        <ul>
+                            <li><strong>Noite:</strong> Evite rigorosamente a exposição a ecrãs nas 2-3 horas antes de deitar. Se for inevitável, use óculos que bloqueiam a luz azul e ative os filtros de luz noturna nos seus dispositivos.</li>
+                            <li><strong>Dia:</strong> Maximize a exposição à luz solar na primeira metade do dia. Isso ancora firmemente o seu ritmo circadiano, reforçando o sinal de vigília e, consequentemente, o de sono mais tarde.</li>
+                        </ul>
+                    </li>
+                    <li class="protocol-item">
+                        <h4><i class="fas fa-bed"></i> Santuário do Sono</h4>
+                        <ul>
+                            <li><strong>Temperatura:</strong> Mantenha o quarto fresco. Uma ligeira descida na temperatura corporal é um sinal para o início do sono.</li>
+                            <li><strong>Escuridão:</strong> O quarto deve ser o mais escuro possível. Use cortinas opacas (<em>blackout</em>) e cubra todas as fontes de luz.</li>
+                            <li><strong>Silêncio:</strong> Minimize o ruído. Considere usar tampões para os ouvidos ou um gerador de ruído branco.</li>
+                        </ul>
+                    </li>
+                    <li class="protocol-item">
+                        <h4><i class="fas fa-book-reader"></i> Rituais de Relaxamento</h4>
+                        <ul>
+                            <li><strong>Horário Consistente:</strong> Mantenha um horário de deitar e levantar consistente, mesmo aos fins de semana.</li>
+                            <li><strong>Ritual de "Desligar":</strong> Crie uma rotina de 30-60 minutos antes de dormir com atividades relaxantes: ler um livro físico, meditar, alongamentos leves ou tomar um banho quente.</li>
+                            <li><strong>Evitar Estimulantes:</strong> Evite cafeína a partir do início da tarde e álcool perto da hora de deitar, pois ele perturba a arquitetura do sono.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+             <section id="biomarcadores-performance" class="content-section">
+                <h2 class="section-title">Biomarcadores de Performance</h2>
+                <p>Acompanhe métricas de desempenho físico para avaliar seu progresso ao longo do tempo.</p>
+                <div id="performance-biomarkers-grid" class="biomarkers-grid">
+                    <div class="biomarker-input-group">
+                        <label for="vo2max-input">VO2 Máx (mL/kg/min)</label>
+                        <input type="number" step="0.1" id="vo2max-input" placeholder="Ex: 45.5">
+                    </div>
+                     <div class="biomarker-input-group">
+                        <label for="grip-strength-input">Força de Preensão (kg)</label>
+                        <input type="number" step="0.1" id="grip-strength-input" placeholder="Ex: 52.3">
+                    </div>
+                     <div class="biomarker-input-group">
+                        <label for="resting-hr-input">FC em Repouso (bpm)</label>
+                        <input type="number" id="resting-hr-input" placeholder="Ex: 55">
+                    </div>
+                </div>
+                 <div class="biomarker-input-group" style="margin-top: 15px;">
+                    <label for="biomarker-date-input">Data da Medição:</label>
+                    <input type="date" id="biomarker-date-input" style="max-width: 200px;">
+                </div>
+                <button id="save-performance-biomarkers-btn" class="standard-button" style="margin-top: 20px;">Salvar Biomarcadores</button>
+            </section>
+
+            <section id="pdca-fisica" class="pdca-integrated-section content-section">
+                <header>
+                    <h2 class="section-title">Ciclo PDCA para Saúde Física</h2>
+                    <p class="subtitle">Use este espaço para planejar, executar, checar e ajustar suas ações focadas na saúde física.</p>
+                </header>
+
+                <div class="pdca-step">
+                    <h3><i class="fas fa-bullseye"></i> PLAN (Planejar)</h3>
+                    <p>Defina suas metas de saúde física. Que rotina de exercícios você seguirá? Como será sua alimentação? Como garantirá um sono de qualidade?</p>
+                    <div id="pdca-fisica-cardio" class="pdca-item"><h4>PDCA: Melhorar Capacidade Cardiorrespiratória</h4><p><em>Planejamento:</em> Realizar 30 minutos de caminhada rápida ou corrida leve, 3 vezes por semana. <em>Ação:</em> Agendar os dias e horários, seguir o plano. <em>Checagem:</em> Monitorar a frequência cardíaca e a sensação de esforço. <em>Ajuste:</em> Aumentar a intensidade ou duração gradualmente.</p></div>
+                    <div id="pdca-fisica-massa" class="pdca-item"><h4>PDCA: Ganho de Massa Muscular</h4><p><em>Planejamento:</em> Seguir um programa de musculação 2-3 vezes por semana, com foco nos principais grupos musculares. <em>Ação:</em> Realizar os treinos, focando na técnica correta. <em>Checagem:</em> Observar o aumento da força e, a longo prazo, as medidas corporais. <em>Ajuste:</em> Aumentar as cargas progressivamente, ajustar os exercícios.</p></div>
+                    <div id="pdca-fisica-mobilidade" class="pdca-item"><h4>PDCA: Mobilidade e Prevenção de Lesões</h4><p><em>Planejamento:</em> Incorporar 10-15 minutos de mobilidade antes dos treinos (alongamentos dinâmicos) e após (alongamentos estáticos). <em>Ação:</em> Seguir rotinas focadas em áreas de tensão, consultando o <a href="#" class="mind-map-button" data-page="alongamento">Guia de Alongamento</a> para exercícios. <em>Checagem:</em> Avaliar a amplitude de movimento e a redução de dores. <em>Ajuste:</em> Adaptar os exercícios de mobilidade com base nas necessidades individuais.</p></div>
+                    <div id="pdca-fisica-estresse" class="pdca-item"><h4>PDCA: Gerenciamento do Estresse Físico</h4><p><em>Planejamento:</em> Agendar dias de descanso ativo (caminhada leve) e descanso passivo na semana. <em>Ação:</em> Respeitar os dias de descanso, dormir o suficiente. <em>Checagem:</em> Avaliar os níveis de energia e a recuperação muscular. Ficar atento a sinais de estresse físico excessivo como <strong>dores</strong> persistentes, aumento de <strong>câimbras</strong> e dificuldade para dormir, que podem indicar um estado de <strong>catabolismo</strong> (degradação muscular) em vez de anabolismo (crescimento). <em>Ajuste:</em> Introduzir mais descanso se notar sinais de overtraining (fadiga, irritabilidade, dores). Considerar técnicas de recuperação como massagem ou banhos de contraste.</p></div>
+                </div>
+            </section>
+
+        </main>
+        <div class="back-button-wrapper">
+            <button class="standard-button back-button" data-page="inicio"><i class="fas fa-arrow-left"></i> Voltar ao Início</button>
+        </div>
