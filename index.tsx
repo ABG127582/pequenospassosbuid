@@ -331,8 +331,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pageLink) {
             const pageKey = pageLink.dataset.page;
             if (pageKey) {
-                e.preventDefault();
-                window.location.hash = pageKey;
+                e.preventDefault(); // Prevent default action immediately
+                const pageId = `page-${pageKey}`;
+
+                // Check if the target page exists in the DOM before changing the hash
+                if (document.getElementById(pageId)) {
+                    window.location.hash = pageKey;
+                } else {
+                    // If the page doesn't exist, do not navigate.
+                    // Optionally, show a toast message to the user.
+                    console.warn(`Navigation to non-existent page "${pageKey}" was blocked.`);
+                    showToast(`A página "${pageKey}" não foi encontrada ou ainda não foi implementada.`, 'warning');
+                }
             }
         }
     });
