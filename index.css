@@ -855,6 +855,58 @@ html.dark-mode .indicator-bar .marker { background-color: var(--text-color-light
     visibility: hidden;
 }
 
+/* --- MAPA MENTAL ESPECÍFICO --- */
+.mind-map-section summary {
+    cursor: pointer;
+    font-weight: 600;
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+    color: var(--section-color, var(--color-primary));
+    font-size: 1.1rem;
+    list-style: none; /* Hide default marker for Firefox */
+}
+.mind-map-section summary::-webkit-details-marker {
+    display: none; /* Hide default marker for Chrome, Safari */
+}
+.mind-map-section summary:hover {
+    color: var(--link-hover-color);
+}
+.mind-map-section details {
+    margin-left: 20px;
+    border-left: 1px dashed var(--border-color);
+    padding-left: 15px;
+}
+.mind-map-section details[open] > summary ~ * {
+    animation: openDetail 0.5s ease-in-out;
+}
+@keyframes openDetail {
+    from {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.mind-map-section ul {
+    list-style-type: none; 
+    padding-left: 5px; 
+}
+.mind-map-section ul li {
+    margin: 5px 0;
+}
+.mind-map-section .chevron {
+    width: 1em;
+    height: 1em;
+    margin-right: 0.5em;
+    transition: transform 0.2s ease-in-out;
+    stroke: var(--section-color, var(--color-primary));
+}
+details[open] > summary .chevron {
+    transform: rotate(90deg);
+}
 
 /* Saúde Mental - Aprofundando */
 .equilibrio-item {
@@ -960,3 +1012,176 @@ html.dark-mode .indicator-bar .marker { background-color: var(--text-color-light
 .saude-card.avaliacao-card { --card-bg-color: var(--color-inicio); } 
 .saude-card.tarefas-card { --card-bg-color: var(--color-tarefas); }
 .saude-card.planejamento-card { --card-bg-color: var(--color-planejamento); color: var(--text-color);}
+
+/* --- TAREFAS: PRIORITY STYLES --- */
+.priority-tag {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-color-light);
+    text-transform: capitalize;
+    display: inline-block;
+    text-align: center;
+    min-width: 65px;
+}
+.priority-tag.priority-low {
+    background-color: var(--color-info);
+}
+.priority-tag.priority-medium {
+    background-color: var(--color-warning);
+    color: var(--text-color); /* Darker text for better contrast on yellow */
+}
+.priority-tag.priority-high {
+    background-color: var(--color-error);
+}
+/* For dark mode on medium priority */
+html.dark-mode .priority-tag.priority-medium {
+     color: var(--text-color);
+}
+
+
+/* --- TAREFAS: CHECKLIST VIEW STYLES --- */
+#checklist-view-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px; /* Space between category groups */
+}
+
+.checklist-category-group {
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-border-radius);
+    padding: 15px;
+    background-color: var(--card-background-color);
+}
+
+.checklist-category-title {
+    font-size: 1.2rem;
+    color: var(--color-tarefas);
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.checklist-item {
+    display: flex;
+    align-items: flex-start; /* Align checkbox to top */
+    gap: 15px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.checklist-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.checklist-item.completed .checklist-item-title {
+    text-decoration: line-through;
+    color: var(--text-color-muted);
+}
+.checklist-item.completed {
+    opacity: 0.7;
+}
+
+.checklist-item-main {
+    flex-grow: 1;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.checklist-item-checkbox {
+    width: 18px;
+    height: 18px;
+    margin-top: 4px; /* Align with text */
+    flex-shrink: 0;
+    cursor: pointer;
+    accent-color: var(--color-tarefas);
+}
+
+.checklist-item-content {
+    flex-grow: 1;
+}
+
+.checklist-item-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.checklist-item-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-color);
+    transition: color 0.2s;
+}
+
+.checklist-item-full-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-out;
+}
+
+.checklist-item.details-expanded .checklist-item-full-details {
+    max-height: 500px; /* Large enough for content */
+    transition: max-height 0.5s ease-in;
+}
+
+.details-inner-wrapper {
+    padding-top: 10px;
+}
+
+.checklist-item-description {
+    font-size: 0.95rem;
+    color: var(--text-color-muted);
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.checklist-item-meta {
+    display: flex;
+    gap: 20px;
+    font-size: 0.85rem;
+    color: var(--text-color-muted);
+    align-items: center;
+}
+.checklist-item-priority {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.priority-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+.priority-dot-high { background-color: var(--color-error); }
+.priority-dot-medium { background-color: var(--color-warning); }
+.priority-dot-low { background-color: var(--color-info); }
+
+.checklist-item-date i {
+    margin-right: 5px;
+}
+
+.checklist-item-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    color: var(--text-color-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s;
+}
+.action-btn i { pointer-events: none; }
+.action-btn:hover { color: var(--color-primary); }
+.checklist-item-actions .delete:hover { color: var(--color-error); }
+.toggle-details i { transition: transform 0.3s ease; }
+.checklist-item.details-expanded .toggle-details i { transform: rotate(180deg); }

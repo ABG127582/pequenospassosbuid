@@ -2,13 +2,43 @@
 // It handles initialization, routing, and global helper functions.
 
 import { GoogleGenAI } from "@google/genai";
-import { initTarefasPage } from './tarefas';
-import { initEspiritualPage } from './espiritual';
-import { initPreventivaPage } from './preventiva';
-import { initPlanejamentoDiarioPage } from './planejamento-diario';
+import { setupTarefasPage, showTarefasPage } from './tarefas';
+import { setupEspiritualPage, showEspiritualPage } from './espiritual';
+import { setupPreventivaPage, showPreventivaPage } from './preventiva';
+import { setupPlanejamentoDiarioPage, showPlanejamentoDiarioPage } from './planejamento-diario';
+import { setupFisicaPage, showFisicaPage } from './fisica';
+import { setupMentalPage, showMentalPage } from './mental';
+import { setupFinanceiraPage, showFinanceiraPage } from './financeira';
+import { setupFamiliarPage, showFamiliarPage } from './familiar';
+import { setupProfissionalPage, showProfissionalPage } from './profissional';
+import { setupSocialPage, showSocialPage } from './social';
+import { setupMapaMentalPage, showMapaMentalPage } from './mapa-mental';
 import DOMPurify from 'dompurify';
 
-import { showToast, saveItems, loadItems, getAISuggestionForInput } from './utils';
+// Re-declare the global window interface to inform TypeScript about global functions
+// that we are defining and attaching to the window object.
+declare global {
+    interface Window {
+        showToast: (message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
+        saveItems: (storageKey: string, items: any) => void;
+        loadItems: (storageKey: string) => any;
+        getAISuggestionForInput: (prompt: string, targetInput: HTMLInputElement | HTMLTextAreaElement, button: HTMLButtonElement) => Promise<void>;
+        Chart: any; // Make Chart.js globally available
+    }
+}
+
+// --- Gemini AI Initialization ---
+const apiKey = process.env.API_KEY;
+let ai: GoogleGenAI;
+
+if (!apiKey) {
+    console.error("API key is missing. Please set API_KEY in your environment variables.");
+    document.addEventListener('DOMContentLoaded', () => {
+        document.body.innerHTML = '<div style="padding: 20px; text-align: center; font-family: sans-serif; color: #d93025;"><h1>Configuration Error</h1><p>The Google AI API key is not configured. Please contact support.</p></div>';
+    });
+} else {
+    ai = new GoogleGenAI({ apiKey });
+}
 
 // --- Page Hierarchy for Breadcrumbs and Active State ---
 const pageHierarchy: { [key: string]: { parent: string | null; title: string } } = {
@@ -197,12 +227,19 @@ async function getAISuggestionForInput(prompt: string, targetInput: HTMLInputEle
 // --- App Initialization & Routing ---
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Make global helpers available on the window object
+    window.showToast = showToast;
+    window.saveItems = saveItems;
+    window.loadItems = loadItems;
+    window.getAISuggestionForInput = getAISuggestionForInput;
+    
     const pages = document.querySelectorAll<HTMLElement>('.page-container, .page-section');
     const navLinks = document.querySelectorAll<HTMLElement>('.sidebar-links a');
     const navSummaries = document.querySelectorAll<HTMLElement>('.sidebar-links summary');
     const sidebar = document.getElementById('sidebar-menu');
     const sidebarToggle = document.getElementById('sidebar-toggle');
     const detailsElements = document.querySelectorAll<HTMLDetailsElement>('.sidebar-links details');
+    const mainContent = document.getElementById('main-content');
 
     // --- Sidebar State Persistence ---
     const restoreMenuState = () => {
@@ -229,6 +266,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const pageId = `page-${pageKey}`;
 
         if (!document.getElementById(pageId)) {
+            // If a page with the given ID doesn't exist, default to the home page.
+            // The specific logic for mind map anchors is now handled exclusively in 'mapa-mental.ts'
+            // which prevents the hash from changing and triggers a smooth scroll,
+            // so this router function will not even be called for those clicks.
             pageKey = 'inicio';
         }
 
@@ -266,16 +307,54 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Initialize any page-specific JavaScript
-        if (pageKey === 'tarefas') initTarefasPage();
-        else if (pageKey === 'espiritual') initEspiritualPage();
-        else if (pageKey === 'planejamento-diario') initPlanejamentoDiarioPage();
-        else if (pageKey === 'preventiva') initPreventivaPage();
+        // Call the appropriate 'show' function to refresh the page content
+        switch (pageKey) {
+            case 'tarefas': showTarefasPage(); break;
+            case 'espiritual': showEspiritualPage(); break;
+            case 'planejamento-diario': showPlanejamentoDiarioPage(); break;
+            case 'preventiva': showPreventivaPage(); break;
+            case 'fisica': showFisicaPage(); break;
+            case 'mental': showMentalPage(); break;
+            case 'financeira': showFinanceiraPage(); break;
+            case 'familiar': showFamiliarPage(); break;
+            case 'profissional': showProfissionalPage(); break;
+            case 'social': showSocialPage(); break;
+            case 'mapa-mental': showMapaMentalPage(); break;
+        }
     };
 
+    // Global handler for in-page navigation buttons
+    mainContent?.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        const pageLink = target.closest<HTMLElement>('button[data-page], a[data-page]');
+
+        if (pageLink) {
+            const pageKey = pageLink.dataset.page;
+            if (pageKey) {
+                e.preventDefault();
+                window.location.hash = pageKey;
+            }
+        }
+    });
+
+    window.addEventListener('hashchange', router);
     window.addEventListener('popstate', router);
     
-    // Initial setup
+    // --- Initial App Setup ---
+    
+    // ONE-TIME SETUP of all page modules. This will attach event listeners.
+    setupTarefasPage();
+    setupEspiritualPage();
+    setupPlanejamentoDiarioPage();
+    setupPreventivaPage();
+    setupFisicaPage();
+    setupMentalPage();
+    setupFinanceiraPage();
+    setupFamiliarPage();
+    setupProfissionalPage();
+    setupSocialPage();
+    setupMapaMentalPage();
+    
     restoreMenuState();
     setupMenuStatePersistence();
     router(); // Handle initial page load
