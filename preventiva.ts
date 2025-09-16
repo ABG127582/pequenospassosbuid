@@ -1,14 +1,8 @@
 import DOMPurify from 'dompurify';
 
-// Re-declare window interface for global functions from index.tsx
-declare global {
-    interface Window {
-        showToast: (message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
-        saveItems: (storageKey: string, items: any) => void;
-        loadItems: (storageKey: string) => any;
-        Chart: any; // Add Chart.js to global scope
-    }
-}
+import { showToast, saveItems, loadItems } from './utils';
+
+declare const Chart: any;
 
 export function initPreventivaPage() {
     const indicatorConfig: { [key: string]: any } = {
@@ -54,7 +48,7 @@ export function initPreventivaPage() {
         if (!card) return;
 
         const config = indicatorConfig[indicatorId];
-        const data = window.loadItems(`preventiva-indicator-${indicatorId}`) || { value: null, date: '' };
+        const data = loadItems(`preventiva-indicator-${indicatorId}`) || { value: null, date: '' };
         const interpretationEl = card.querySelector('.interpretation') as HTMLElement;
         const suggestionEl = card.querySelector('.suggestion') as HTMLElement;
         const marker = card.querySelector('.marker') as HTMLElement;
@@ -99,18 +93,18 @@ export function initPreventivaPage() {
         const date = dateInput.value;
 
         if (isNaN(value) || !date) {
-            window.showToast('Por favor, insira um valor e uma data válidos.', 'warning');
+            showToast('Por favor, insira um valor e uma data válidos.', 'warning');
             return;
         }
 
         const data = { value, date };
-        window.saveItems(`preventiva-indicator-${indicatorId}`, data);
+        saveItems(`preventiva-indicator-${indicatorId}`, data);
         
-        const history = window.loadItems(`preventiva-indicator-history-${indicatorId}`) || [];
+        const history = loadItems(`preventiva-indicator-history-${indicatorId}`) || [];
         history.push(data);
-        window.saveItems(`preventiva-indicator-history-${indicatorId}`, history);
+        saveItems(`preventiva-indicator-history-${indicatorId}`, history);
         
-        window.showToast(`${indicatorConfig[indicatorId].name} atualizado com sucesso!`, 'success');
+        showToast(`${indicatorConfig[indicatorId].name} atualizado com sucesso!`, 'success');
         renderIndicatorCard(indicatorId);
     };
 
@@ -124,7 +118,7 @@ export function initPreventivaPage() {
         if (!modal || !canvas || !noDataEl || !modalTitle) return;
 
         const config = indicatorConfig[indicatorId];
-        const history = (window.loadItems(`preventiva-indicator-history-${indicatorId}`) || []).sort((a:any, b:any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        const history = (loadItems(`preventiva-indicator-history-${indicatorId}`) || []).sort((a:any, b:any) => new Date(a.date).getTime() - new Date(b.date).getTime());
         
         modalTitle.textContent = `Histórico de ${config.name}`;
 
@@ -143,8 +137,7 @@ export function initPreventivaPage() {
                 indicatorChartInstance.destroy();
             }
 
-            const Chart = window.Chart;
-            if (!Chart) {
+            if (typeof Chart === 'undefined') {
                 console.error('Chart.js not loaded');
                 return;
             }
@@ -180,7 +173,7 @@ export function initPreventivaPage() {
         let allHistory: (any & { indicatorId: string; indicatorName: string })[] = [];
 
         Object.keys(indicatorConfig).forEach(indicatorId => {
-            const history = window.loadItems(`preventiva-indicator-history-${indicatorId}`) || [];
+            const history = loadItems(`preventiva-indicator-history-${indicatorId}`) || [];
             const indicatorName = indicatorConfig[indicatorId].name;
             history.forEach((entry: any) => {
                 allHistory.push({ ...entry, indicatorId, indicatorName });

@@ -14,16 +14,7 @@ interface Task {
     completed: boolean;
 }
 
-// Re-declare the global window interface to inform TypeScript about global functions
-// defined in index.tsx that this module uses.
-declare global {
-    interface Window {
-        showToast: (message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
-        saveItems: (storageKey: string, items: any) => void;
-        loadItems: (storageKey: string) => any;
-        getAISuggestionForInput: (prompt: string, targetInput: HTMLInputElement | HTMLTextAreaElement, button: HTMLButtonElement) => Promise<void>;
-    }
-}
+import { showToast, saveItems, loadItems, getAISuggestionForInput } from './utils';
 
 
 export function initTarefasPage() {
@@ -96,13 +87,13 @@ export function initTarefasPage() {
 
     // --- Data Persistence ---
     const saveData = () => {
-        window.saveItems('tasksData', tasks);
-        window.saveItems('tasksCategories', categories);
+        saveItems('tasksData', tasks);
+        saveItems('tasksCategories', categories);
     };
 
     const loadData = () => {
-        tasks = window.loadItems('tasksData') || [];
-        categories = window.loadItems('tasksCategories') || ['Física', 'Mental', 'Financeira', 'Familiar', 'Profissional', 'Social', 'Espiritual', 'Preventiva'];
+        tasks = loadItems('tasksData') || [];
+        categories = loadItems('tasksCategories') || ['Física', 'Mental', 'Financeira', 'Familiar', 'Profissional', 'Social', 'Espiritual', 'Preventiva'];
     };
 
     // --- Modal Logic ---
@@ -154,7 +145,7 @@ export function initTarefasPage() {
         };
 
         if (!taskData.title || taskData.title.trim() === '') {
-            window.showToast('O título da tarefa é obrigatório.', 'warning');
+            showToast('O título da tarefa é obrigatório.', 'warning');
             return;
         }
 
@@ -174,7 +165,7 @@ export function initTarefasPage() {
         saveData();
         render();
         closeTaskModal();
-        window.showToast(`Tarefa ${editingTaskId ? 'atualizada' : 'adicionada'} com sucesso!`, 'success');
+        showToast(`Tarefa ${editingTaskId ? 'atualizada' : 'adicionada'} com sucesso!`, 'success');
     };
 
     // Renders the category doughnut chart.
@@ -503,7 +494,7 @@ export function initTarefasPage() {
                 tasks = tasks.filter(t => t.id !== taskId);
                 saveData();
                 render();
-                window.showToast('Tarefa excluída.', 'success');
+                showToast('Tarefa excluída.', 'success');
             }
         } else if (target.closest('.edit')) {
             openTaskModal(task);
@@ -530,7 +521,7 @@ export function initTarefasPage() {
             saveData();
             render();
             elements.quickTaskInput.value = '';
-            window.showToast('Tarefa rápida adicionada!', 'success');
+            showToast('Tarefa rápida adicionada!', 'success');
         }
     };
     
@@ -544,9 +535,9 @@ export function initTarefasPage() {
                     categories.push(newCategory);
                     saveData();
                     renderCategories();
-                    window.showToast('Categoria adicionada!', 'success');
+                    showToast('Categoria adicionada!', 'success');
                 } else {
-                    window.showToast('Essa categoria já existe.', 'warning');
+                    showToast('Essa categoria já existe.', 'warning');
                 }
             }
         } else if (target.classList.contains('category-tag')) {
@@ -619,17 +610,17 @@ export function initTarefasPage() {
     // AI Suggestions
     elements.quickTaskAIBtn?.addEventListener('click', () => {
         const prompt = "Sugira um título de tarefa conciso e acionável. Por exemplo: 'Revisar o orçamento mensal' ou 'Agendar consulta médica'.";
-        window.getAISuggestionForInput(prompt, elements.quickTaskInput, elements.quickTaskAIBtn);
+        getAISuggestionForInput(prompt, elements.quickTaskInput, elements.quickTaskAIBtn);
     });
     
     elements.modalTitleAIBtn?.addEventListener('click', () => {
         const prompt = "Sugira um título claro e conciso para uma tarefa, com no máximo 10 palavras.";
-        window.getAISuggestionForInput(prompt, elements.modalTitleInput, elements.modalTitleAIBtn);
+        getAISuggestionForInput(prompt, elements.modalTitleInput, elements.modalTitleAIBtn);
     });
 
     elements.modalDescriptionAIBtn?.addEventListener('click', () => {
         const currentTitle = elements.modalTitleInput.value;
         const prompt = `Com base no título da tarefa "${currentTitle || 'uma nova tarefa'}", gere uma descrição detalhada, incluindo o objetivo principal e possíveis subtarefas ou pontos a serem considerados.`;
-        window.getAISuggestionForInput(prompt, elements.modalDescriptionInput, elements.modalDescriptionAIBtn);
+        getAISuggestionForInput(prompt, elements.modalDescriptionInput, elements.modalDescriptionAIBtn);
     });
 }

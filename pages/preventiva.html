@@ -1,0 +1,1401 @@
+<div class="page-section" id="page-preventiva">
+ <div class="container">
+  <header class="preventiva-header">
+   <button class="standard-button" id="preventivaBackButton" style="display: none;">
+    <i class="fas fa-arrow-left">
+    </i>
+    Voltar
+   </button>
+   <h1 id="preventivaMainTitle">
+    Saúde Preventiva
+   </h1>
+  </header>
+  <main>
+   <!-- Menu Principal da Saúde Preventiva -->
+   <div class="preventiva-page active" id="preventivaMainMenu">
+    <div class="menu-grid">
+     <div aria-label="Acessar calendário de vacinação" class="menu-item" data-target="preventivaVacinas" role="button" tabindex="0">
+      <span class="icon">
+       <i class="fas fa-syringe">
+       </i>
+      </span>
+      <h3>
+       Vacinação
+      </h3>
+     </div>
+     <div aria-label="Acessar indicadores de saúde e exames" class="menu-item" data-target="preventivaExames" role="button" tabindex="0">
+      <span class="icon">
+       <i class="fas fa-stethoscope">
+       </i>
+      </span>
+      <h3>
+       Biomarcadores
+      </h3>
+     </div>
+     <div aria-label="Acessar protocolo pessoal de suplementação" class="menu-item" data-target="preventivaProtocolo" role="button" tabindex="0">
+      <span class="icon">
+       <i class="fas fa-pills">
+       </i>
+      </span>
+      <h3>
+       Protocolo Pessoal
+      </h3>
+     </div>
+     <div aria-label="Acessar diagnósticos e fatores de risco" class="menu-item" data-target="preventivaDiagnosticos" role="button" tabindex="0">
+      <span class="icon">
+       <i class="fas fa-file-medical-alt">
+       </i>
+      </span>
+      <h3>
+       Diagnósticos e Riscos
+      </h3>
+     </div>
+     <div aria-label="Acessar metas de saúde preventiva" class="menu-item" data-target="preventivaMetas" role="button" tabindex="0">
+      <span class="icon">
+       <i class="fas fa-bullseye">
+       </i>
+      </span>
+      <h3>
+       Metas Preventivas
+      </h3>
+     </div>
+     <div aria-label="Acessar histórico de indicadores" class="menu-item" data-target="preventivaHistorico" role="button" tabindex="0">
+      <span class="icon">
+       <i class="fas fa-history">
+       </i>
+      </span>
+      <h3>
+       Histórico
+      </h3>
+     </div>
+    </div>
+    <section class="resources-section content-section" style="margin-top: 30px;">
+     <h2 class="section-title">
+      Recursos Úteis
+     </h2>
+     <ul class="recursos-list">
+      <li>
+       <a href="https://blueprint.bryanjohnson.com/" rel="noopener noreferrer" target="_blank">
+        Protocolo Blueprint de Bryan Johnson (Otimização de Saúde)
+       </a>
+      </li>
+     </ul>
+    </section>
+   </div>
+   <!-- Subpágina: Metas Preventivas -->
+   <div class="preventiva-page" id="preventivaMetas">
+    <section class="form-section content-section">
+     <h2 class="section-title">
+      Objetivos de Saúde Preventiva
+     </h2>
+     <ul class="lista-planejamento" id="preventiva-metas-list">
+     </ul>
+     <form id="preventiva-metas-form">
+      <label for="preventiva-meta-input">
+       Novo Objetivo Preventivo:
+      </label>
+      <div class="input-wrapper">
+       <input id="preventiva-meta-input" placeholder="Ex: Agendar check-up anual, Realizar autoexame mensal" required="" type="text"/>
+       <button class="ai-suggestion-btn" id="preventiva-meta-input-ai-btn" title="Sugerir com IA" type="button">
+        <i class="fas fa-wand-magic-sparkles">
+        </i>
+        <i class="fas fa-spinner fa-spin">
+        </i>
+       </button>
+      </div>
+      <button class="standard-button" type="submit">
+       Adicionar Objetivo
+      </button>
+     </form>
+    </section>
+   </div>
+   <!-- Subpágina: Vacinação -->
+   <div class="preventiva-page" id="preventivaVacinas">
+    <section class="content-section">
+     <h2 class="section-title">
+      Calendário de Vacinação
+     </h2>
+     <div class="table-responsive">
+      <table id="tabela-vacinas">
+       <caption>
+        Controle de Vacinação Adulto
+       </caption>
+       <thead>
+        <tr>
+         <th>
+          Vacina
+         </th>
+         <th>
+          Última Dose
+         </th>
+         <th>
+          Próxima Dose
+         </th>
+         <th>
+          Status
+         </th>
+         <th>
+          Informações
+         </th>
+        </tr>
+       </thead>
+       <tbody>
+        <tr data-vaccine-id="tetano">
+         <td>
+          Tétano e Difteria (dT/dTpa)
+         </td>
+         <td>
+          <input aria-label="Data da última dose de Tétano e Difteria" class="vaccine-last-dose input-table-date" type="date"/>
+         </td>
+         <td class="vaccine-next-dose">
+          -
+         </td>
+         <td class="vaccine-status">
+         </td>
+         <td>
+          <a aria-label="Ver detalhes sobre a vacina de Tétano e Difteria" class="vaccine-info-link tooltip" href="#">
+           Detalhes
+          </a>
+         </td>
+        </tr>
+        <tr data-vaccine-id="hepatite-b">
+         <td>
+          Hepatite B
+         </td>
+         <td>
+          <input aria-label="Data da última dose de Hepatite B" class="vaccine-last-dose input-table-date" type="date"/>
+         </td>
+         <td class="vaccine-next-dose">
+          -
+         </td>
+         <td class="vaccine-status">
+         </td>
+         <td>
+          <a aria-label="Ver detalhes sobre a vacina de Hepatite B" class="vaccine-info-link tooltip" href="#">
+           Detalhes
+          </a>
+         </td>
+        </tr>
+        <tr data-vaccine-id="influenza">
+         <td>
+          Influenza (Gripe)
+         </td>
+         <td>
+          <input aria-label="Data da última dose de Influenza" class="vaccine-last-dose input-table-date" type="date"/>
+         </td>
+         <td class="vaccine-next-dose">
+          -
+         </td>
+         <td class="vaccine-status">
+         </td>
+         <td>
+          <a aria-label="Ver detalhes sobre a vacina de Influenza" class="vaccine-info-link tooltip" href="#">
+           Detalhes
+          </a>
+         </td>
+        </tr>
+        <tr data-vaccine-id="triplice-viral">
+         <td>
+          Tríplice Viral (SCR)
+         </td>
+         <td>
+          <input aria-label="Data da última dose de Tríplice Viral" class="vaccine-last-dose input-table-date" type="date"/>
+         </td>
+         <td class="vaccine-next-dose">
+          -
+         </td>
+         <td class="vaccine-status">
+         </td>
+         <td>
+          <a aria-label="Ver detalhes sobre a vacina Tríplice Viral" class="vaccine-info-link tooltip" href="#">
+           Detalhes
+          </a>
+         </td>
+        </tr>
+        <tr data-vaccine-id="febre-amarela">
+         <td>
+          Febre Amarela
+         </td>
+         <td>
+          <input aria-label="Data da última dose de Febre Amarela" class="vaccine-last-dose input-table-date" type="date"/>
+         </td>
+         <td class="vaccine-next-dose">
+          -
+         </td>
+         <td class="vaccine-status">
+         </td>
+         <td>
+          <a aria-label="Ver detalhes sobre a vacina de Febre Amarela" class="vaccine-info-link tooltip" href="#">
+           Detalhes
+          </a>
+         </td>
+        </tr>
+        <tr data-vaccine-id="hpv">
+         <td>
+          HPV
+         </td>
+         <td>
+          <input aria-label="Data da última dose de HPV" class="vaccine-last-dose input-table-date" type="date"/>
+         </td>
+         <td class="vaccine-next-dose">
+          -
+         </td>
+         <td class="vaccine-status">
+         </td>
+         <td>
+          <a aria-label="Ver detalhes sobre a vacina de HPV" class="vaccine-info-link tooltip" href="#">
+           Detalhes
+          </a>
+         </td>
+        </tr>
+        <tr data-vaccine-id="pneumococica">
+         <td>
+          Pneumocócica
+         </td>
+         <td>
+          <input aria-label="Data da última dose de Pneumocócica" class="vaccine-last-dose input-table-date" type="date"/>
+         </td>
+         <td class="vaccine-next-dose">
+          -
+         </td>
+         <td class="vaccine-status">
+         </td>
+         <td>
+          <a aria-label="Ver detalhes sobre a vacina Pneumocócica" class="vaccine-info-link tooltip" href="#">
+           Detalhes
+          </a>
+         </td>
+        </tr>
+        <tr data-vaccine-id="meningococica">
+         <td>
+          Meningocócica
+         </td>
+         <td>
+          <input aria-label="Data da última dose de Meningocócica" class="vaccine-last-dose input-table-date" type="date"/>
+         </td>
+         <td class="vaccine-next-dose">
+          -
+         </td>
+         <td class="vaccine-status">
+         </td>
+         <td>
+          <a aria-label="Ver detalhes sobre a vacina Meningocócica" class="vaccine-info-link tooltip" href="#">
+           Detalhes
+          </a>
+         </td>
+        </tr>
+        <tr data-vaccine-id="varicela">
+         <td>
+          Varicela (Catapora)
+         </td>
+         <td>
+          <input aria-label="Data da última dose de Varicela" class="vaccine-last-dose input-table-date" type="date"/>
+         </td>
+         <td class="vaccine-next-dose">
+          -
+         </td>
+         <td class="vaccine-status">
+         </td>
+         <td>
+          <a aria-label="Ver detalhes sobre a vacina de Varicela" class="vaccine-info-link tooltip" href="#">
+           Detalhes
+          </a>
+         </td>
+        </tr>
+        <tr data-vaccine-id="hepatite-a">
+         <td>
+          Hepatite A
+         </td>
+         <td>
+          <input aria-label="Data da última dose de Hepatite A" class="vaccine-last-dose input-table-date" type="date"/>
+         </td>
+         <td class="vaccine-next-dose">
+          -
+         </td>
+         <td class="vaccine-status">
+         </td>
+         <td>
+          <a aria-label="Ver detalhes sobre a vacina de Hepatite A" class="vaccine-info-link tooltip" href="#">
+           Detalhes
+          </a>
+         </td>
+        </tr>
+        <tr data-vaccine-id="herpes-zoster">
+         <td>
+          Herpes Zóster
+         </td>
+         <td>
+          <input aria-label="Data da última dose de Herpes Zóster" class="vaccine-last-dose input-table-date" type="date"/>
+         </td>
+         <td class="vaccine-next-dose">
+          -
+         </td>
+         <td class="vaccine-status">
+         </td>
+         <td>
+          <a aria-label="Ver detalhes sobre a vacina de Herpes Zóster" class="vaccine-info-link tooltip" href="#">
+           Detalhes
+          </a>
+         </td>
+        </tr>
+        <tr data-vaccine-id="covid-19">
+         <td>
+          COVID-19
+         </td>
+         <td>
+          <input aria-label="Data da última dose de COVID-19" class="vaccine-last-dose input-table-date" type="date"/>
+         </td>
+         <td class="vaccine-next-dose">
+          -
+         </td>
+         <td class="vaccine-status">
+         </td>
+         <td>
+          <a aria-label="Ver detalhes sobre a vacina de COVID-19" class="vaccine-info-link tooltip" href="#">
+           Detalhes
+          </a>
+         </td>
+        </tr>
+        <tr data-vaccine-id="dengue">
+         <td>
+          Dengue
+         </td>
+         <td>
+          <input aria-label="Data da última dose de Dengue" class="vaccine-last-dose input-table-date" type="date"/>
+         </td>
+         <td class="vaccine-next-dose">
+          -
+         </td>
+         <td class="vaccine-status">
+         </td>
+         <td>
+          <a aria-label="Ver detalhes sobre a vacina de Dengue" class="vaccine-info-link tooltip" href="#">
+           Detalhes
+          </a>
+         </td>
+        </tr>
+       </tbody>
+      </table>
+     </div>
+    </section>
+   </div>
+   <!-- Subpágina: Exames e Indicadores -->
+   <div class="preventiva-page" id="preventivaExames">
+    <section class="content-section">
+     <h2 class="section-title">
+      Painel de Biomarcadores
+     </h2>
+     <div class="indicator-grid">
+      <div class="blueprint-indicator-card indicator-card" data-indicator-id="glicemia">
+       <div class="indicator-header">
+        <h3>
+         Glicemia em Jejum (mg/dL)
+        </h3>
+       </div>
+       <div class="indicator-bar-container">
+        <div class="indicator-bar">
+         <span class="marker">
+         </span>
+        </div>
+        <div class="indicator-labels">
+         <span>
+          50
+         </span>
+         <span class="indicator-labels-optimal">
+          70-99
+         </span>
+         <span>
+          150
+         </span>
+        </div>
+       </div>
+       <div class="indicator-data">
+        <p class="interpretation">
+        </p>
+        <p class="suggestion">
+        </p>
+        <div class="overdue-warning" style="display: none;">
+         Exame há mais de 1 ano!
+        </div>
+       </div>
+       <div class="indicator-input-group">
+        <input class="indicator-value" placeholder="Valor" step="1" type="number"/>
+        <input class="indicator-date" type="date"/>
+        <button class="update-button small-button">
+         Salvar
+        </button>
+        <button class="history-button standard-button-secondary small-button" title="Ver Histórico">
+         <i class="fas fa-chart-line">
+         </i>
+        </button>
+       </div>
+      </div>
+      <div class="blueprint-indicator-card indicator-card" data-indicator-id="hdl">
+       <div class="indicator-header">
+        <h3>
+         HDL Colesterol (mg/dL)
+        </h3>
+       </div>
+       <div class="indicator-bar-container">
+        <div class="indicator-bar">
+         <span class="marker">
+         </span>
+        </div>
+        <div class="indicator-labels">
+         <span>
+          20
+         </span>
+         <span class="indicator-labels-optimal">
+          &gt; 60
+         </span>
+         <span>
+          100
+         </span>
+        </div>
+       </div>
+       <div class="indicator-data">
+        <p class="interpretation">
+        </p>
+        <p class="suggestion">
+        </p>
+        <div class="overdue-warning" style="display: none;">
+         Exame há mais de 1 ano!
+        </div>
+       </div>
+       <div class="indicator-input-group">
+        <input class="indicator-value" placeholder="Valor" step="1" type="number"/>
+        <input class="indicator-date" type="date"/>
+        <button class="update-button small-button">
+         Salvar
+        </button>
+        <button class="history-button standard-button-secondary small-button" title="Ver Histórico">
+         <i class="fas fa-chart-line">
+         </i>
+        </button>
+       </div>
+      </div>
+      <div class="blueprint-indicator-card indicator-card" data-indicator-id="ldl">
+       <div class="indicator-header">
+        <h3>
+         LDL Colesterol (mg/dL)
+        </h3>
+       </div>
+       <div class="indicator-bar-container">
+        <div class="indicator-bar">
+         <span class="marker">
+         </span>
+        </div>
+        <div class="indicator-labels">
+         <span>
+          50
+         </span>
+         <span class="indicator-labels-optimal">
+          &lt; 100
+         </span>
+         <span>
+          200
+         </span>
+        </div>
+       </div>
+       <div class="indicator-data">
+        <p class="interpretation">
+        </p>
+        <p class="suggestion">
+        </p>
+        <div class="overdue-warning" style="display: none;">
+         Exame há mais de 1 ano!
+        </div>
+       </div>
+       <div class="indicator-input-group">
+        <input class="indicator-value" placeholder="Valor" step="1" type="number"/>
+        <input class="indicator-date" type="date"/>
+        <button class="update-button small-button">
+         Salvar
+        </button>
+        <button class="history-button standard-button-secondary small-button" title="Ver Histórico">
+         <i class="fas fa-chart-line">
+         </i>
+        </button>
+       </div>
+      </div>
+      <div class="blueprint-indicator-card indicator-card" data-indicator-id="colesterol">
+       <div class="indicator-header">
+        <h3>
+         Colesterol Total (mg/dL)
+        </h3>
+       </div>
+       <div class="indicator-bar-container">
+        <div class="indicator-bar">
+         <span class="marker">
+         </span>
+        </div>
+        <div class="indicator-labels">
+         <span>
+          100
+         </span>
+         <span class="indicator-labels-optimal">
+          &lt; 200
+         </span>
+         <span>
+          300
+         </span>
+        </div>
+       </div>
+       <div class="indicator-data">
+        <p class="interpretation">
+        </p>
+        <p class="suggestion">
+        </p>
+        <div class="overdue-warning" style="display: none;">
+         Exame há mais de 1 ano!
+        </div>
+       </div>
+       <div class="indicator-input-group">
+        <input class="indicator-value" placeholder="Valor" step="1" type="number"/>
+        <input class="indicator-date" type="date"/>
+        <button class="update-button small-button">
+         Salvar
+        </button>
+        <button class="history-button standard-button-secondary small-button" title="Ver Histórico">
+         <i class="fas fa-chart-line">
+         </i>
+        </button>
+       </div>
+      </div>
+      <div class="blueprint-indicator-card indicator-card" data-indicator-id="triglicerideos">
+       <div class="indicator-header">
+        <h3>
+         Triglicerídeos (mg/dL)
+        </h3>
+       </div>
+       <div class="indicator-bar-container">
+        <div class="indicator-bar">
+         <span class="marker">
+         </span>
+        </div>
+        <div class="indicator-labels">
+         <span>
+          50
+         </span>
+         <span class="indicator-labels-optimal">
+          &lt; 150
+         </span>
+         <span>
+          500
+         </span>
+        </div>
+       </div>
+       <div class="indicator-data">
+        <p class="interpretation">
+        </p>
+        <p class="suggestion">
+        </p>
+        <div class="overdue-warning" style="display: none;">
+         Exame há mais de 1 ano!
+        </div>
+       </div>
+       <div class="indicator-input-group">
+        <input class="indicator-value" placeholder="Valor" step="1" type="number"/>
+        <input class="indicator-date" type="date"/>
+        <button class="update-button small-button">
+         Salvar
+        </button>
+        <button class="history-button standard-button-secondary small-button" title="Ver Histórico">
+         <i class="fas fa-chart-line">
+         </i>
+        </button>
+       </div>
+      </div>
+      <div class="blueprint-indicator-card indicator-card" data-indicator-id="vitd">
+       <div class="indicator-header">
+        <h3>
+         Vitamina D (ng/mL)
+        </h3>
+       </div>
+       <div class="indicator-bar-container">
+        <div class="indicator-bar">
+         <span class="marker">
+         </span>
+        </div>
+        <div class="indicator-labels">
+         <span>
+          10
+         </span>
+         <span class="indicator-labels-optimal">
+          30-60
+         </span>
+         <span>
+          100
+         </span>
+        </div>
+       </div>
+       <div class="indicator-data">
+        <p class="interpretation">
+        </p>
+        <p class="suggestion">
+        </p>
+        <div class="overdue-warning" style="display: none;">
+         Exame há mais de 1 ano!
+        </div>
+       </div>
+       <div class="indicator-input-group">
+        <input class="indicator-value" placeholder="Valor" step="1" type="number"/>
+        <input class="indicator-date" type="date"/>
+        <button class="update-button small-button">
+         Salvar
+        </button>
+        <button class="history-button standard-button-secondary small-button" title="Ver Histórico">
+         <i class="fas fa-chart-line">
+         </i>
+        </button>
+       </div>
+      </div>
+      <div class="blueprint-indicator-card indicator-card" data-indicator-id="tsh">
+       <div class="indicator-header">
+        <h3>
+         TSH (µUI/mL)
+        </h3>
+       </div>
+       <div class="indicator-bar-container">
+        <div class="indicator-bar">
+         <span class="marker">
+         </span>
+        </div>
+        <div class="indicator-labels">
+         <span>
+          0.1
+         </span>
+         <span class="indicator-labels-optimal">
+          0.4-4.0
+         </span>
+         <span>
+          10
+         </span>
+        </div>
+       </div>
+       <div class="indicator-data">
+        <p class="interpretation">
+        </p>
+        <p class="suggestion">
+        </p>
+        <div class="overdue-warning" style="display: none;">
+         Exame há mais de 1 ano!
+        </div>
+       </div>
+       <div class="indicator-input-group">
+        <input class="indicator-value" placeholder="Valor" step="0.01" type="number"/>
+        <input class="indicator-date" type="date"/>
+        <button class="update-button small-button">
+         Salvar
+        </button>
+        <button class="history-button standard-button-secondary small-button" title="Ver Histórico">
+         <i class="fas fa-chart-line">
+         </i>
+        </button>
+       </div>
+      </div>
+      <div class="blueprint-indicator-card indicator-card" data-indicator-id="creatinina">
+       <div class="indicator-header">
+        <h3>
+         Creatinina (mg/dL)
+        </h3>
+       </div>
+       <div class="indicator-bar-container">
+        <div class="indicator-bar">
+         <span class="marker">
+         </span>
+        </div>
+        <div class="indicator-labels">
+         <span>
+          0.4
+         </span>
+         <span class="indicator-labels-optimal">
+          0.6-1.2
+         </span>
+         <span>
+          1.5
+         </span>
+        </div>
+       </div>
+       <div class="indicator-data">
+        <p class="interpretation">
+        </p>
+        <p class="suggestion">
+        </p>
+        <div class="overdue-warning" style="display: none;">
+         Exame há mais de 1 ano!
+        </div>
+       </div>
+       <div class="indicator-input-group">
+        <input class="indicator-value" placeholder="Valor" step="0.01" type="number"/>
+        <input class="indicator-date" type="date"/>
+        <button class="update-button small-button">
+         Salvar
+        </button>
+        <button class="history-button standard-button-secondary small-button" title="Ver Histórico">
+         <i class="fas fa-chart-line">
+         </i>
+        </button>
+       </div>
+      </div>
+      <div class="blueprint-indicator-card indicator-card" data-indicator-id="acidourico">
+       <div class="indicator-header">
+        <h3>
+         Ácido Úrico (mg/dL)
+        </h3>
+       </div>
+       <div class="indicator-bar-container">
+        <div class="indicator-bar">
+         <span class="marker">
+         </span>
+        </div>
+        <div class="indicator-labels">
+         <span>
+          2
+         </span>
+         <span class="indicator-labels-optimal">
+          2.5-6.0
+         </span>
+         <span>
+          10
+         </span>
+        </div>
+       </div>
+       <div class="indicator-data">
+        <p class="interpretation">
+        </p>
+        <p class="suggestion">
+        </p>
+        <div class="overdue-warning" style="display: none;">
+         Exame há mais de 1 ano!
+        </div>
+       </div>
+       <div class="indicator-input-group">
+        <input class="indicator-value" placeholder="Valor" step="0.1" type="number"/>
+        <input class="indicator-date" type="date"/>
+        <button class="update-button small-button">
+         Salvar
+        </button>
+        <button class="history-button standard-button-secondary small-button" title="Ver Histórico">
+         <i class="fas fa-chart-line">
+         </i>
+        </button>
+       </div>
+      </div>
+      <div class="blueprint-indicator-card indicator-card" data-indicator-id="pcr">
+       <div class="indicator-header">
+        <h3>
+         PCR Ultrassensível (mg/L)
+        </h3>
+       </div>
+       <div class="indicator-bar-container">
+        <div class="indicator-bar">
+         <span class="marker">
+         </span>
+        </div>
+        <div class="indicator-labels">
+         <span>
+          0
+         </span>
+         <span class="indicator-labels-optimal">
+          &lt; 0.9
+         </span>
+         <span>
+          10
+         </span>
+        </div>
+       </div>
+       <div class="indicator-data">
+        <p class="interpretation">
+        </p>
+        <p class="suggestion">
+        </p>
+        <div class="overdue-warning" style="display: none;">
+         Exame há mais de 1 ano!
+        </div>
+       </div>
+       <div class="indicator-input-group">
+        <input class="indicator-value" placeholder="Valor" step="0.1" type="number"/>
+        <input class="indicator-date" type="date"/>
+        <button class="update-button small-button">
+         Salvar
+        </button>
+        <button class="history-button standard-button-secondary small-button" title="Ver Histórico">
+         <i class="fas fa-chart-line">
+         </i>
+        </button>
+       </div>
+      </div>
+      <div class="blueprint-indicator-card indicator-card" data-indicator-id="ferritina">
+       <div class="indicator-header">
+        <h3>
+         Ferritina (ng/mL)
+        </h3>
+       </div>
+       <div class="indicator-bar-container">
+        <div class="indicator-bar">
+         <span class="marker">
+         </span>
+        </div>
+        <div class="indicator-labels">
+         <span>
+          10
+         </span>
+         <span class="indicator-labels-optimal">
+          50-150
+         </span>
+         <span>
+          400
+         </span>
+        </div>
+       </div>
+       <div class="indicator-data">
+        <p class="interpretation">
+        </p>
+        <p class="suggestion">
+        </p>
+        <div class="overdue-warning" style="display: none;">
+         Exame há mais de 1 ano!
+        </div>
+       </div>
+       <div class="indicator-input-group">
+        <input class="indicator-value" placeholder="Valor" step="1" type="number"/>
+        <input class="indicator-date" type="date"/>
+        <button class="update-button small-button">
+         Salvar
+        </button>
+        <button class="history-button standard-button-secondary small-button" title="Ver Histórico">
+         <i class="fas fa-chart-line">
+         </i>
+        </button>
+       </div>
+      </div>
+      <div class="blueprint-indicator-card indicator-card" data-indicator-id="b12">
+       <div class="indicator-header">
+        <h3>
+         Vitamina B12 (pg/mL)
+        </h3>
+       </div>
+       <div class="indicator-bar-container">
+        <div class="indicator-bar">
+         <span class="marker">
+         </span>
+        </div>
+        <div class="indicator-labels">
+         <span>
+          100
+         </span>
+         <span class="indicator-labels-optimal">
+          400-900
+         </span>
+         <span>
+          1000
+         </span>
+        </div>
+       </div>
+       <div class="indicator-data">
+        <p class="interpretation">
+        </p>
+        <p class="suggestion">
+        </p>
+        <div class="overdue-warning" style="display: none;">
+         Exame há mais de 1 ano!
+        </div>
+       </div>
+       <div class="indicator-input-group">
+        <input class="indicator-value" placeholder="Valor" step="10" type="number"/>
+        <input class="indicator-date" type="date"/>
+        <button class="update-button small-button">
+         Salvar
+        </button>
+        <button class="history-button standard-button-secondary small-button" title="Ver Histórico">
+         <i class="fas fa-chart-line">
+         </i>
+        </button>
+       </div>
+      </div>
+      <div class="blueprint-indicator-card indicator-card" data-indicator-id="gordura_bio">
+       <div class="indicator-header">
+        <h3>
+         Gordura Corporal (Bioimpedância) (%)
+        </h3>
+       </div>
+       <div class="indicator-bar-container">
+        <div class="indicator-bar">
+         <span class="marker">
+         </span>
+        </div>
+        <div class="indicator-labels">
+         <span>
+          5
+         </span>
+         <span class="indicator-labels-optimal">
+          10-20
+         </span>
+         <span>
+          50
+         </span>
+        </div>
+       </div>
+       <div class="indicator-data">
+        <p class="interpretation">
+        </p>
+        <p class="suggestion">
+        </p>
+        <div class="overdue-warning" style="display: none;">
+         Exame há mais de 1 ano!
+        </div>
+       </div>
+       <div class="indicator-input-group">
+        <input class="indicator-value" placeholder="Valor" step="0.1" type="number"/>
+        <input class="indicator-date" type="date"/>
+        <button class="update-button small-button">
+         Salvar
+        </button>
+        <button class="history-button standard-button-secondary small-button" title="Ver Histórico">
+         <i class="fas fa-chart-line">
+         </i>
+        </button>
+       </div>
+      </div>
+      <div class="blueprint-indicator-card indicator-card" data-indicator-id="massamagra_bio">
+       <div class="indicator-header">
+        <h3>
+         Massa Magra (Bioimpedância) (kg)
+        </h3>
+       </div>
+       <div class="indicator-bar-container">
+        <div class="indicator-bar">
+         <span class="marker">
+         </span>
+        </div>
+        <div class="indicator-labels">
+         <span>
+          30
+         </span>
+         <span class="indicator-labels-optimal">
+          50-80
+         </span>
+         <span>
+          90
+         </span>
+        </div>
+       </div>
+       <div class="indicator-data">
+        <p class="interpretation">
+        </p>
+        <p class="suggestion">
+        </p>
+        <div class="overdue-warning" style="display: none;">
+         Exame há mais de 1 ano!
+        </div>
+       </div>
+       <div class="indicator-input-group">
+        <input class="indicator-value" placeholder="Valor" step="0.1" type="number"/>
+        <input class="indicator-date" type="date"/>
+        <button class="update-button small-button">
+         Salvar
+        </button>
+        <button class="history-button standard-button-secondary small-button" title="Ver Histórico">
+         <i class="fas fa-chart-line">
+         </i>
+        </button>
+       </div>
+      </div>
+     </div>
+    </section>
+   </div>
+   <!-- Subpágina: Protocolo Pessoal -->
+   <div class="preventiva-page" id="preventivaProtocolo">
+    <section class="content-section">
+     <h2 class="section-title">
+      Protocolo Pessoal
+     </h2>
+     <p>
+      Liste todos os suplementos e medicamentos que você toma, incluindo dosagem, horário e propósito, para manter um registro claro e rigoroso do seu protocolo pessoal.
+     </p>
+     <div class="table-responsive" style="margin-bottom: 20px;">
+      <table id="tabela-suplementos">
+       <thead>
+        <tr>
+         <th>
+          Item (Suplemento/Medicamento)
+         </th>
+         <th>
+          Dosagem
+         </th>
+         <th>
+          Frequência
+         </th>
+         <th>
+          Hora
+         </th>
+         <th>
+          Propósito/Notas
+         </th>
+         <th>
+          Ação
+         </th>
+        </tr>
+       </thead>
+       <tbody id="supplement-protocol-list">
+        <!-- Linhas de suplementos serão adicionadas aqui via JS -->
+       </tbody>
+      </table>
+     </div>
+     <h3 class="section-title" style="font-size: 1.2rem; border: none; margin-bottom: 10px;">
+      Adicionar ao Protocolo
+     </h3>
+     <form class="form-section" id="add-supplement-form">
+      <div class="form-grid">
+       <input id="supplement-name" placeholder="Nome do Item" required="" type="text"/>
+       <input id="supplement-dosage" placeholder="Dosagem (ex: 500mg)" type="text"/>
+       <input id="supplement-frequency" placeholder="Frequência (ex: 1x/dia)" type="text"/>
+       <input id="supplement-time" type="time"/>
+       <input id="supplement-notes" placeholder="Propósito (ex: Saúde óssea)" type="text"/>
+      </div>
+      <button class="standard-button" type="submit">
+       <i class="fas fa-plus">
+       </i>
+       Adicionar ao Protocolo
+      </button>
+     </form>
+    </section>
+   </div>
+   <!-- Subpágina: Diagnósticos e Riscos -->
+   <div class="preventiva-page" id="preventivaDiagnosticos">
+    <section class="content-section">
+     <h2 class="section-title">
+      Diagnósticos Prévios e Fatores de Risco
+     </h2>
+     <p>
+      Marque os diagnósticos que você possui e adicione informações relevantes. Isso ajuda a personalizar seu acompanhamento.
+     </p>
+     <div class="risk-item" data-diagnostic-id="hipertensao">
+      <span class="toggle-switch">
+       <input class="diagnostic-toggle" id="hipertensaoToggle" type="checkbox"/>
+       <label for="hipertensaoToggle">
+       </label>
+      </span>
+      <label for="hipertensaoToggle">
+       Hipertensão Arterial
+      </label>
+      <div class="risk-details">
+       <label for="hipertensaoDate">
+        Data do Diagnóstico:
+       </label>
+       <input class="diagnostic-date" type="date"/>
+       <label for="hipertensaoMedication">
+        Medicação em Uso:
+       </label>
+       <input class="diagnostic-medication" placeholder="Ex: Losartana 50mg" type="text"/>
+       <label for="hipertensaoNotes">
+        Observações:
+       </label>
+       <textarea class="diagnostic-notes" placeholder="Ex: Controlada com medicação, acompanhamento regular."></textarea>
+      </div>
+     </div>
+     <div class="risk-item" data-diagnostic-id="diabetes">
+      <span class="toggle-switch">
+       <input class="diagnostic-toggle" id="diabetesToggle" type="checkbox"/>
+       <label for="diabetesToggle">
+       </label>
+      </span>
+      <label for="diabetesToggle">
+       Diabetes Mellitus
+      </label>
+      <div class="risk-details">
+       <label for="diabetesType">
+        Tipo (1, 2, Gestacional):
+       </label>
+       <input class="diagnostic-type" placeholder="Ex: Tipo 2" type="text"/>
+       <label for="diabetesDate">
+        Data do Diagnóstico:
+       </label>
+       <input class="diagnostic-date" type="date"/>
+       <label for="diabetesMedication">
+        Medicação/Tratamento:
+       </label>
+       <input class="diagnostic-medication" placeholder="Ex: Metformina, Insulina" type="text"/>
+       <label for="diabetesNotes">
+        Observações:
+       </label>
+       <textarea class="diagnostic-notes" placeholder="Ex: Controle glicêmico, dieta específica."></textarea>
+      </div>
+     </div>
+     <div class="risk-item" data-diagnostic-id="dislipidemia">
+      <span class="toggle-switch">
+       <input class="diagnostic-toggle" id="dislipidemiaToggle" type="checkbox"/>
+       <label for="dislipidemiaToggle">
+       </label>
+      </span>
+      <label for="dislipidemiaToggle">
+       Dislipidemia (Colesterol/Triglicerídeos Alto)
+      </label>
+      <div class="risk-details">
+       <label for="dislipidemiaDate">
+        Data do Diagnóstico:
+       </label>
+       <input class="diagnostic-date" type="date"/>
+       <label for="dislipidemiaMedication">
+        Medicação em Uso:
+       </label>
+       <input class="diagnostic-medication" placeholder="Ex: Sinvastatina 20mg" type="text"/>
+       <label for="dislipidemiaNotes">
+        Observações:
+       </label>
+       <textarea class="diagnostic-notes" placeholder="Ex: Acompanhamento lipídico a cada 6 meses."></textarea>
+      </div>
+     </div>
+     <h3 style="margin-top: 30px; font-size: 1.2rem; color: var(--color-preventiva);">
+      Exames de Rastreamento
+     </h3>
+     <div class="risk-item" data-diagnostic-id="exame-prostata">
+      <span class="toggle-switch">
+       <input class="diagnostic-toggle" id="exameProstataToggle" type="checkbox"/>
+       <label for="exameProstataToggle">
+       </label>
+      </span>
+      <label for="exameProstataToggle">
+       Exame de Próstata (PSA/Toque)
+      </label>
+      <div class="risk-details">
+       <label for="prostataDate">
+        Data do Último Exame:
+       </label>
+       <input class="diagnostic-date" type="date"/>
+       <label for="prostataNotes">
+        Observações:
+       </label>
+       <textarea class="diagnostic-notes" placeholder="Ex: Resultado normal, próximo em 2 anos."></textarea>
+      </div>
+     </div>
+     <div class="risk-item" data-diagnostic-id="mamografia">
+      <span class="toggle-switch">
+       <input class="diagnostic-toggle" id="mamografiaToggle" type="checkbox"/>
+       <label for="mamografiaToggle">
+       </label>
+      </span>
+      <label for="mamografiaToggle">
+       Mamografia
+      </label>
+      <div class="risk-details">
+       <label for="mamografiaDate">
+        Data do Último Exame:
+       </label>
+       <input class="diagnostic-date" type="date"/>
+       <label for="mamografiaType">
+        Resultado (BIRADS):
+       </label>
+       <input class="diagnostic-type" placeholder="Ex: BIRADS 1" type="text"/>
+       <label for="mamografiaSeverity">
+        Recomendação:
+       </label>
+       <input class="diagnostic-severity" placeholder="Ex: Repetir em 1 ano" type="text"/>
+      </div>
+     </div>
+     <div class="risk-item" data-diagnostic-id="papanicolau">
+      <span class="toggle-switch">
+       <input class="diagnostic-toggle" id="papanicolauToggle" type="checkbox"/>
+       <label for="papanicolauToggle">
+       </label>
+      </span>
+      <label for="papanicolauToggle">
+       Papanicolau (Preventivo)
+      </label>
+      <div class="risk-details">
+       <label for="papanicolauDate">
+        Data do Último Exame:
+       </label>
+       <input class="diagnostic-date" type="date"/>
+       <label for="papanicolauSeverity">
+        Resultado:
+       </label>
+       <input class="diagnostic-severity" placeholder="Ex: Negativo para malignidade" type="text"/>
+      </div>
+     </div>
+     <div class="risk-item" data-diagnostic-id="colonoscopia">
+      <span class="toggle-switch">
+       <input class="diagnostic-toggle" id="colonoscopiaToggle" type="checkbox"/>
+       <label for="colonoscopiaToggle">
+       </label>
+      </span>
+      <label for="colonoscopiaToggle">
+       Colonoscopia
+      </label>
+      <div class="risk-details">
+       <label for="colonoscopiaDate">
+        Data do Último Exame:
+       </label>
+       <input class="diagnostic-date" type="date"/>
+       <label for="colonoscopiaType">
+        Achados:
+       </label>
+       <input class="diagnostic-type" placeholder="Ex: Pólipos removidos" type="text"/>
+       <label for="colonoscopiaSeverity">
+        Recomendação:
+       </label>
+       <input class="diagnostic-severity" placeholder="Ex: Repetir em 5 anos" type="text"/>
+      </div>
+     </div>
+     <div class="risk-item" data-diagnostic-id="dermatologico">
+      <span class="toggle-switch">
+       <input class="diagnostic-toggle" id="dermatologicoToggle" type="checkbox"/>
+       <label for="dermatologicoToggle">
+       </label>
+      </span>
+      <label for="dermatologicoToggle">
+       Exame Dermatológico (Pele)
+      </label>
+      <div class="risk-details">
+       <label for="dermatologicoDate">
+        Data do Último Exame:
+       </label>
+       <input class="diagnostic-date" type="date"/>
+       <label for="dermatologicoSeverity">
+        Observações:
+       </label>
+       <input class="diagnostic-severity" placeholder="Ex: Mapeamento de nevos, sem alterações." type="text"/>
+      </div>
+     </div>
+     <div class="risk-item" data-diagnostic-id="oftalmologico">
+      <span class="toggle-switch">
+       <input class="diagnostic-toggle" id="oftalmologicoToggle" type="checkbox"/>
+       <label for="oftalmologicoToggle">
+       </label>
+      </span>
+      <label for="oftalmologicoToggle">
+       Exame Oftalmológico (Visão)
+      </label>
+      <div class="risk-details">
+       <label for="oftalmologicoDate">
+        Data do Último Exame:
+       </label>
+       <input class="diagnostic-date" type="date"/>
+       <label for="oftalmologicoType">
+        Diagnóstico:
+       </label>
+       <input class="diagnostic-type" placeholder="Ex: Miopia, Astigmatismo" type="text"/>
+      </div>
+     </div>
+     <div class="risk-item" data-diagnostic-id="odontologico">
+      <span class="toggle-switch">
+       <input class="diagnostic-toggle" id="odontologicoToggle" type="checkbox"/>
+       <label for="odontologicoToggle">
+       </label>
+      </span>
+      <label for="odontologicoToggle">
+       Check-up Odontológico
+      </label>
+      <div class="risk-details">
+       <label for="odontologicoDate">
+        Data da Última Consulta:
+       </label>
+       <input class="diagnostic-date" type="date"/>
+       <label for="odontologicoType">
+        Tratamentos Realizados:
+       </label>
+       <input class="diagnostic-type" placeholder="Ex: Limpeza, restauração" type="text"/>
+       <label for="odontologicoSeverity">
+        Recomendação:
+       </label>
+       <input class="diagnostic-severity" placeholder="Ex: Retorno em 6 meses" type="text"/>
+      </div>
+     </div>
+     <div class="risk-item" data-diagnostic-id="densitometria">
+      <span class="toggle-switch">
+       <input class="diagnostic-toggle" id="densitometriaToggle" type="checkbox"/>
+       <label for="densitometriaToggle">
+       </label>
+      </span>
+      <label for="densitometriaToggle">
+       Densitometria Óssea
+      </label>
+      <div class="risk-details">
+       <label for="densitometriaDate">
+        Data do Último Exame:
+       </label>
+       <input class="diagnostic-date" type="date"/>
+       <label for="densitometriaSeverity">
+        Resultado:
+       </label>
+       <input class="diagnostic-severity" placeholder="Ex: Osteopenia, Normal" type="text"/>
+      </div>
+     </div>
+     <div class="risk-item" data-diagnostic-id="audiometria">
+      <span class="toggle-switch">
+       <input class="diagnostic-toggle" id="audiometriaToggle" type="checkbox"/>
+       <label for="audiometriaToggle">
+       </label>
+      </span>
+      <label for="audiometriaToggle">
+       Audiometria
+      </label>
+      <div class="risk-details">
+       <label for="audiometriaDate">
+        Data da Última Consulta:
+       </label>
+       <input class="diagnostic-date" type="date"/>
+       <label for="audiometriaSeverity">
+        Resultado:
+       </label>
+       <input class="diagnostic-severity" placeholder="Ex: Audição normal" type="text"/>
+      </div>
+     </div>
+     <button class="standard-button" id="saveDiagnosticosButton" style="margin-top: 20px;">
+      Salvar Diagnósticos e Riscos
+     </button>
+    </section>
+   </div>
+   <!-- Subpágina: Histórico de Indicadores -->
+   <div class="preventiva-page" id="preventivaHistorico">
+    <section class="content-section">
+     <h2 class="section-title">
+      Histórico de Biomarcadores
+     </h2>
+     <div class="table-responsive">
+      <table id="tabela-historico-indicadores">
+       <caption>
+        Últimos 50 registros de indicadores de saúde.
+       </caption>
+       <thead>
+        <tr>
+         <th>
+          Indicador
+         </th>
+         <th>
+          Data do Exame
+         </th>
+         <th>
+          Valor
+         </th>
+         <th>
+          Status
+         </th>
+         <th>
+          Ação
+         </th>
+        </tr>
+       </thead>
+       <tbody id="historicoIndicadoresBody">
+        <!-- Linhas serão adicionadas aqui via JS -->
+       </tbody>
+      </table>
+     </div>
+    </section>
+   </div>
+  </main>
+  <div class="back-button-wrapper">
+   <button class="standard-button back-button" data-page="inicio">
+    <i class="fas fa-arrow-left">
+    </i>
+    Voltar ao Início
+   </button>
+  </div>
+  <footer>
+   <p>
+    © 2025 Pequenos Passos para uma Vida Extraordinária
+   </p>
+  </footer>
+ </div>
+</div>
