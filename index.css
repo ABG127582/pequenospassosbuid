@@ -322,13 +322,12 @@ a[data-page*="mapa-mental"].active { --section-color: var(--color-secondary); --
 }
 
 /* Page container and animation */
-.page-container, .page-section {
-    display: none; /* JS handles visibility */
+#page-content-wrapper > .page-container,
+#page-content-wrapper > .page-section {
+    display: block; /* Pages are loaded one at a time, so they are always visible */
     animation: fadeIn 0.5s ease-in-out;
 }
-.page-container.active, .page-section.active {
-    display: block;
-}
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }

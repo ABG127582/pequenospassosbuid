@@ -13,6 +13,8 @@ import { setupFamiliarPage, showFamiliarPage } from './familiar';
 import { setupProfissionalPage, showProfissionalPage } from './profissional';
 import { setupSocialPage, showSocialPage } from './social';
 import { setupMapaMentalPage, showMapaMentalPage } from './mapa-mental';
+import { setupAlongamentoPage, showAlongamentoPage } from './alongamento';
+import { setupInicioPage, showInicioPage } from './inicio';
 import DOMPurify from 'dompurify';
 
 // Re-declare the global window interface to inform TypeScript about global functions
@@ -118,6 +120,39 @@ function updateBreadcrumbs(pageKey: string) {
 
     nav.innerHTML = '';
     nav.appendChild(ol);
+}
+
+function updateActiveNav(pageKey: string) {
+    const navLinks = document.querySelectorAll<HTMLElement>('.sidebar-links a');
+    const navSummaries = document.querySelectorAll<HTMLElement>('.sidebar-links summary');
+
+    navLinks.forEach(link => link.classList.remove('active'));
+    navSummaries.forEach(summary => summary.classList.remove('active'));
+
+    const activeLink = document.querySelector(`.sidebar-links a[href="#${pageKey}"]`);
+    if (activeLink) {
+        activeLink.classList.add('active');
+        const parentDetails = activeLink.closest('details');
+        if (parentDetails) {
+            const parentSummary = parentDetails.querySelector('summary');
+            parentSummary?.classList.add('active');
+            if (!parentDetails.open) {
+                parentDetails.open = true;
+            }
+        }
+    } else {
+        const hierarchy = pageHierarchy[pageKey];
+        if (hierarchy && hierarchy.parent) {
+            const parentSummary = document.querySelector(`summary[data-page-parent="${hierarchy.parent}"]`) as HTMLElement;
+            if (parentSummary) {
+                parentSummary.classList.add('active');
+                const parentDetails = parentSummary.closest('details');
+                if (parentDetails && !parentDetails.open) {
+                    parentDetails.open = true;
+                }
+            }
+        }
+    }
 }
 
 
@@ -233,13 +268,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.loadItems = loadItems;
     window.getAISuggestionForInput = getAISuggestionForInput;
     
-    const pages = document.querySelectorAll<HTMLElement>('.page-container, .page-section');
-    const navLinks = document.querySelectorAll<HTMLElement>('.sidebar-links a');
-    const navSummaries = document.querySelectorAll<HTMLElement>('.sidebar-links summary');
     const sidebar = document.getElementById('sidebar-menu');
     const sidebarToggle = document.getElementById('sidebar-toggle');
     const detailsElements = document.querySelectorAll<HTMLDetailsElement>('.sidebar-links details');
     const mainContent = document.getElementById('main-content');
+    const pageContentWrapper = document.getElementById('page-content-wrapper');
 
     // --- Sidebar State Persistence ---
     const restoreMenuState = () => {
@@ -260,80 +293,77 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     
-    const router = () => {
+    const pageCache: { [key: string]: string } = {};
+
+    const router = async () => {
         const hash = window.location.hash.substring(1);
         let pageKey = hash || 'inicio';
-        const pageId = `page-${pageKey}`;
 
-        if (!document.getElementById(pageId)) {
-            // If a page with the given ID doesn't exist, default to the home page.
-            // The specific logic for mind map anchors is now handled exclusively in 'mapa-mental.ts'
-            // which prevents the hash from changing and triggers a smooth scroll,
-            // so this router function will not even be called for those clicks.
+        if (!pageHierarchy[pageKey]) {
+            console.warn(`Page key "${pageKey}" not found in hierarchy, defaulting to inicio.`);
             pageKey = 'inicio';
         }
 
-        pages.forEach(page => {
-            page.style.display = page.id === `page-${pageKey}` ? 'block' : 'none';
-        });
-
-        updateBreadcrumbs(pageKey);
-
-        navLinks.forEach(link => link.classList.remove('active'));
-        navSummaries.forEach(summary => summary.classList.remove('active'));
-
-        const activeLink = document.querySelector(`.sidebar-links a[href="#${pageKey}"]`);
-        if (activeLink) {
-            activeLink.classList.add('active');
-            const parentDetails = activeLink.closest('details');
-            if (parentDetails) {
-                const parentSummary = parentDetails.querySelector('summary');
-                parentSummary?.classList.add('active');
-                if (!parentDetails.open) {
-                    parentDetails.open = true;
-                }
-            }
-        } else {
-            const hierarchy = pageHierarchy[pageKey];
-            if (hierarchy && hierarchy.parent) {
-                const parentSummary = document.querySelector(`summary[data-page-parent="${hierarchy.parent}"]`) as HTMLElement;
-                if (parentSummary) {
-                    parentSummary.classList.add('active');
-                    const parentDetails = parentSummary.closest('details');
-                    if (parentDetails && !parentDetails.open) {
-                        parentDetails.open = true;
-                    }
-                }
-            }
+        if (!pageContentWrapper) {
+            console.error('#page-content-wrapper not found!');
+            return;
         }
 
-        // Call the appropriate 'show' function to refresh the page content
-        switch (pageKey) {
-            case 'tarefas': showTarefasPage(); break;
-            case 'espiritual': showEspiritualPage(); break;
-            case 'planejamento-diario': showPlanejamentoDiarioPage(); break;
-            case 'preventiva': showPreventivaPage(); break;
-            case 'fisica': showFisicaPage(); break;
-            case 'mental': showMentalPage(); break;
-            case 'financeira': showFinanceiraPage(); break;
-            case 'familiar': showFamiliarPage(); break;
-            case 'profissional': showProfissionalPage(); break;
-            case 'social': showSocialPage(); break;
-            case 'mapa-mental': showMapaMentalPage(); break;
+        // Show a loading indicator
+        pageContentWrapper.innerHTML = '<p style="text-align:center; padding: 40px;">Carregando...</p>';
+        
+        try {
+            let pageHtml = pageCache[pageKey];
+            if (!pageHtml) {
+                const response = await fetch(`${pageKey}.html`);
+                if (!response.ok) {
+                    throw new Error(`Page not found: ${pageKey}.html (Status: ${response.status})`);
+                }
+                pageHtml = await response.text();
+                pageCache[pageKey] = pageHtml;
+            }
+
+            pageContentWrapper.innerHTML = DOMPurify.sanitize(pageHtml);
+            
+            updateBreadcrumbs(pageKey);
+            updateActiveNav(pageKey);
+            
+            // Call setup and show for the newly loaded page
+            switch (pageKey) {
+                case 'inicio': setupInicioPage(); showInicioPage(); break;
+                case 'tarefas': setupTarefasPage(); showTarefasPage(); break;
+                case 'espiritual': setupEspiritualPage(); showEspiritualPage(); break;
+                case 'planejamento-diario': setupPlanejamentoDiarioPage(); showPlanejamentoDiarioPage(); break;
+                case 'preventiva': setupPreventivaPage(); showPreventivaPage(); break;
+                case 'fisica': setupFisicaPage(); showFisicaPage(); break;
+                case 'mental': setupMentalPage(); showMentalPage(); break;
+                case 'financeira': setupFinanceiraPage(); showFinanceiraPage(); break;
+                case 'familiar': setupFamiliarPage(); showFamiliarPage(); break;
+                case 'profissional': setupProfissionalPage(); showProfissionalPage(); break;
+                case 'social': setupSocialPage(); showSocialPage(); break;
+                case 'mapa-mental': setupMapaMentalPage(); showMapaMentalPage(); break;
+                case 'alongamento': setupAlongamentoPage(); showAlongamentoPage(); break;
+                // Add cases for other pages as they are created
+            }
+
+        } catch (error) {
+            console.error('Error loading page:', error);
+            pageContentWrapper.innerHTML = `<div class="content-section" style="text-align: center;"><h2>Página não encontrada</h2><p>Ocorreu um erro ao carregar o conteúdo. Por favor, tente novamente.</p></div>`;
+            updateBreadcrumbs('inicio');
+            updateActiveNav('inicio');
         }
     };
 
-    // Global handler for in-page navigation buttons
-    mainContent?.addEventListener('click', (e) => {
-        const target = e.target as HTMLElement;
-        const pageLink = target.closest<HTMLElement>('button[data-page], a[data-page]');
 
-        if (pageLink) {
+    // Global handler for in-page navigation buttons
+    document.body.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        // Handle direct page links from buttons or anchors inside loaded content
+        const pageLink = target.closest<HTMLElement>('button[data-page], a[data-page]');
+        if (pageLink && pageLink.dataset.page) {
             const pageKey = pageLink.dataset.page;
-            if (pageKey) {
-                e.preventDefault();
-                window.location.hash = pageKey;
-            }
+            e.preventDefault();
+            window.location.hash = pageKey;
         }
     });
 
@@ -341,19 +371,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('popstate', router);
     
     // --- Initial App Setup ---
-    
-    // ONE-TIME SETUP of all page modules. This will attach event listeners.
-    setupTarefasPage();
-    setupEspiritualPage();
-    setupPlanejamentoDiarioPage();
-    setupPreventivaPage();
-    setupFisicaPage();
-    setupMentalPage();
-    setupFinanceiraPage();
-    setupFamiliarPage();
-    setupProfissionalPage();
-    setupSocialPage();
-    setupMapaMentalPage();
     
     restoreMenuState();
     setupMenuStatePersistence();
