@@ -1,11 +1,6 @@
 import DOMPurify from 'dompurify';
 
-// Type definitions
-interface Goal {
-    id: string;
-    text: string;
-    completed: boolean;
-}
+// Type definitions are no longer needed as Goals are removed.
 
 // Re-declare window interface for global functions from index.tsx
 declare global {
@@ -17,9 +12,146 @@ declare global {
     }
 }
 
+// --- VACCINE MANAGEMENT ---
+const VACCINE_DATES_KEY = 'preventivaVaccineDates';
+
+const vaccineInfo: {
+    [key: string]: {
+        name: string;
+        scheduleType: 'booster' | 'annual' | 'series' | 'single' | 'check';
+        validityYears?: number;
+        pendingMonths?: number; // How early to warn
+        details: string;
+    }
+} = {
+    'tetano': { name: 'Tétano e Difteria (dT/dTpa)', scheduleType: 'booster', validityYears: 10, pendingMonths: 3, details: 'Reforço a cada 10 anos para a maioria dos adultos. Gestantes podem necessitar da dTpa a cada gestação.' },
+    'hepatite-b': { name: 'Hepatite B', scheduleType: 'series', details: 'Normalmente um esquema de 3 doses. Após completo, a imunidade é geralmente vitalícia. Verifique seu status vacinal.' },
+    'influenza': { name: 'Influenza (Gripe)', scheduleType: 'annual', pendingMonths: 2, details: 'Dose anual, recomendada antes do início do inverno.' },
+    'triplice-viral': { name: 'Tríplice Viral (SCR)', scheduleType: 'series', details: 'Duas doses na vida para nascidos após 1960 garantem imunidade. Verifique seu cartão de vacina.' },
+    'febre-amarela': { name: 'Febre Amarela', scheduleType: 'single', details: 'Dose única para a maioria das pessoas. Verifique a recomendação para sua área.' },
+    'hpv': { name: 'HPV', scheduleType: 'series', details: 'Esquema de 2 ou 3 doses dependendo da idade de início. Verifique seu status vacinal.' },
+    'pneumococica': { name: 'Pneumocócica', scheduleType: 'check', details: 'Recomendada para adultos 60+ ou com condições de risco. Esquema varia. Consulte um médico.' },
+    'meningococica': { name: 'Meningocócica', scheduleType: 'check', details: 'Recomendada para adolescentes e adultos jovens, ou em situações de surto. Consulte um médico.' },
+    'varicela': { name: 'Varicela (Catapora)', scheduleType: 'series', details: 'Esquema de 2 doses se não teve a doença. Verifique seu cartão de vacina.' },
+    'hepatite-a': { name: 'Hepatite A', scheduleType: 'series', details: 'Esquema de 2 doses. Após completo, a imunidade é duradoura.' },
+    'herpes-zoster': { name: 'Herpes Zóster', scheduleType: 'check', details: 'Recomendada para adultos 50+. Esquema de 2 doses da vacina recombinante. Consulte um médico.' },
+    'covid-19': { name: 'COVID-19', scheduleType: 'annual', pendingMonths: 2, details: 'Reforços anuais ou semestrais podem ser recomendados, siga as diretrizes locais de saúde.' },
+    'dengue': { name: 'Dengue', scheduleType: 'series', details: 'Disponível para faixas etárias específicas e em áreas endêmicas. Esquema de 2 doses. Consulte um médico.' },
+};
+
+function calculateAndDisplayVaccineStatus(vaccineId: string) {
+    const mainContainer = document.getElementById('page-preventiva');
+    if (!mainContainer) return;
+
+    const row = mainContainer.querySelector(`tr[data-vaccine-id="${vaccineId}"]`);
+    if (!row) return;
+
+    const lastDoseInput = row.querySelector('.vaccine-last-dose') as HTMLInputElement;
+    const nextDoseCell = row.querySelector('.vaccine-next-dose') as HTMLElement;
+    const statusCell = row.querySelector('.vaccine-status') as HTMLElement;
+    const infoLink = row.querySelector('.vaccine-info-link') as HTMLElement;
+
+    const vaccineRule = vaccineInfo[vaccineId];
+    if (infoLink && vaccineRule) {
+        infoLink.setAttribute('data-tooltip', vaccineRule.details);
+    }
+    
+    const savedDates = window.loadItems(VACCINE_DATES_KEY) || {};
+    const lastDoseDateStr = savedDates[vaccineId];
+    
+    lastDoseInput.value = lastDoseDateStr || '';
+
+    // Clear previous status
+    nextDoseCell.textContent = '-';
+    statusCell.textContent = '';
+    statusCell.className = 'vaccine-status';
+
+    if (!lastDoseDateStr) {
+        statusCell.textContent = 'Verificar';
+        statusCell.classList.add('status-check');
+        return;
+    }
+    
+    if (!vaccineRule) return;
+
+
+    const lastDoseDate = new Date(lastDoseDateStr + 'T00:00:00');
+    let nextDueDate: Date | null = null;
+    let statusText = '';
+    let statusClass = '';
+
+    switch (vaccineRule.scheduleType) {
+        case 'booster':
+            if (vaccineRule.validityYears) {
+                nextDueDate = new Date(lastDoseDate);
+                nextDueDate.setFullYear(nextDueDate.getFullYear() + vaccineRule.validityYears);
+            }
+            break;
+        case 'annual':
+            nextDueDate = new Date(lastDoseDate);
+            nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+            break;
+        case 'series':
+            statusText = 'Verificar esquema';
+            statusClass = 'status-partial';
+            break;
+        case 'single':
+            statusText = 'Dose única';
+            statusClass = 'status-ok';
+            break;
+        case 'check':
+            statusText = 'Consultar médico';
+            statusClass = 'status-check';
+            break;
+    }
+
+    if (nextDueDate) {
+        nextDoseCell.textContent = nextDueDate.toLocaleDateString('pt-BR');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const timeDiff = nextDueDate.getTime() - today.getTime();
+        const daysUntilDue = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        const pendingDays = (vaccineRule.pendingMonths || 1) * 30;
+
+        if (daysUntilDue < 0) {
+            statusText = 'Vencida';
+            statusClass = 'status-overdue';
+        } else if (daysUntilDue <= pendingDays) {
+            statusText = 'Vence em breve';
+            statusClass = 'status-pending';
+        } else {
+            statusText = 'Em dia';
+            statusClass = 'status-ok';
+        }
+    }
+
+    statusCell.textContent = statusText;
+    if (statusClass) {
+        statusCell.classList.add(statusClass);
+    }
+}
+
+function loadAndDisplayAllVaccines() {
+    Object.keys(vaccineInfo).forEach(calculateAndDisplayVaccineStatus);
+}
+
+function handleVaccineDateChange(e: Event) {
+    const target = e.target as HTMLInputElement;
+    if (!target.classList.contains('vaccine-last-dose')) return;
+    
+    const row = target.closest('tr');
+    if (!row || !row.dataset.vaccineId) return;
+
+    const vaccineId = row.dataset.vaccineId;
+    const savedDates = window.loadItems(VACCINE_DATES_KEY) || {};
+    savedDates[vaccineId] = target.value;
+    window.saveItems(VACCINE_DATES_KEY, savedDates);
+
+    calculateAndDisplayVaccineStatus(vaccineId);
+}
+
+
 // --- Module-scoped variables ---
-let goals: Goal[] = [];
-const GOALS_STORAGE_KEY = 'preventivaGoals';
 const indicatorConfig: { [key: string]: any } = {
     'glicemia': { name: 'Glicemia em Jejum', unit: 'mg/dL', min: 50, max: 150, zones: [{ to: 69, color: '#f6c23e', status: 'Atenção', tip: 'Hipoglicemia' }, { to: 99, color: '#1cc88a', status: 'Normal', tip: 'Normal' }, { to: 125, color: '#f6c23e', status: 'Atenção', tip: 'Pré-Diabetes' }, { to: 150, color: '#e74a3b', status: 'Alerta', tip: 'Diabetes' }] },
     'hdl': { name: 'HDL Colesterol', unit: 'mg/dL', min: 20, max: 100, reversed: true, zones: [{ to: 39, color: '#e74a3b', status: 'Alerta', tip: 'Baixo' }, { to: 59, color: '#f6c23e', status: 'Atenção', tip: 'Normal' }, { to: 100, color: '#1cc88a', status: 'Ótimo', tip: 'Ótimo' }] },
@@ -38,13 +170,6 @@ const indicatorConfig: { [key: string]: any } = {
 };
 
 let indicatorChartInstance: any = null; // Chart.js instance
-
-const elements = {
-    goalsList: null as HTMLUListElement | null,
-    goalsForm: null as HTMLFormElement | null,
-    goalInput: null as HTMLInputElement | null,
-    goalAIBtn: null as HTMLButtonElement | null,
-};
 
 // --- Helper Functions ---
 const getInterpretation = (value: number, zones: any[], reversed: boolean = false) => {
@@ -246,69 +371,14 @@ const showPreventivaPageUI = (targetId: string, mainContainer: HTMLElement) => {
         if (mainTitle && targetPage.querySelector('h2.section-title')) {
             mainTitle.textContent = targetPage.querySelector('h2.section-title')!.textContent;
         }
+        if (targetId === 'preventivaVacinas') {
+            loadAndDisplayAllVaccines();
+        }
         if (targetId === 'preventivaHistorico') {
             renderHistoryPage();
         }
-        if (targetId === 'preventivaMetas') {
-            goals = window.loadItems(GOALS_STORAGE_KEY) || [];
-            renderGoals();
-        }
     }
 };
-
-// --- GOAL MANAGEMENT ---
-const renderGoals = () => {
-    if (!elements.goalsList) return;
-    elements.goalsList.innerHTML = '';
-    if (goals.length === 0) {
-        elements.goalsList.innerHTML = '<li class="empty-list-placeholder">Nenhum objetivo definido.</li>';
-        return;
-    }
-    goals.forEach(goal => {
-        const li = document.createElement('li');
-        li.className = goal.completed ? 'completed' : '';
-        li.dataset.id = goal.id;
-        li.innerHTML = `
-            <span class="item-text">${DOMPurify.sanitize(goal.text)}</span>
-            <div class="item-actions">
-                <button class="complete-btn ${goal.completed ? 'completed' : ''}" aria-label="Completar objetivo"><i class="fas fa-check-circle"></i></button>
-                <button class="delete-btn" aria-label="Apagar objetivo"><i class="fas fa-trash"></i></button>
-            </div>
-        `;
-        elements.goalsList!.appendChild(li);
-    });
-};
-
-const handleGoalAction = (e: Event) => {
-    const target = e.target as HTMLElement;
-    const li = target.closest('li');
-    if (!li || !li.dataset.id) return;
-
-    const goalId = li.dataset.id;
-    const goalIndex = goals.findIndex(g => g.id === goalId);
-    if (goalIndex === -1) return;
-
-    if (target.closest('.complete-btn')) {
-        goals[goalIndex].completed = !goals[goalIndex].completed;
-    } else if (target.closest('.delete-btn')) {
-        goals.splice(goalIndex, 1);
-    }
-
-    window.saveItems(GOALS_STORAGE_KEY, goals);
-    renderGoals();
-};
-
-const handleAddGoal = (e: Event) => {
-    e.preventDefault();
-    const text = elements.goalInput!.value.trim();
-    if (text) {
-        goals.unshift({ id: Date.now().toString(), text, completed: false });
-        elements.goalInput!.value = '';
-        window.saveItems(GOALS_STORAGE_KEY, goals);
-        renderGoals();
-    }
-};
-
 
 // --- Page Lifecycle Functions ---
 
@@ -316,16 +386,12 @@ export function setupPreventivaPage() {
     const mainContainer = document.getElementById('page-preventiva');
     if (!mainContainer) return;
 
-    elements.goalsList = mainContainer.querySelector('#preventiva-metas-list');
-    elements.goalsForm = mainContainer.querySelector('#preventiva-metas-form');
-    elements.goalInput = mainContainer.querySelector('#preventiva-meta-input');
-    elements.goalAIBtn = mainContainer.querySelector('#preventiva-meta-input-ai-btn');
-
     const mainMenu = mainContainer.querySelector('#preventivaMainMenu');
     const backButton = mainContainer.querySelector<HTMLElement>('#preventivaBackButton');
     const mainTitle = mainContainer.querySelector('#preventivaMainTitle');
     const indicatorGrid = mainContainer.querySelector('#preventivaExames');
     const historicoTable = mainContainer.querySelector('#tabela-historico-indicadores');
+    const vacinasTable = mainContainer.querySelector('#tabela-vacinas');
     
     const closeChartModalBtn = document.getElementById('indicator-chart-modal-close-btn');
     const cancelChartModalBtn = document.getElementById('indicator-chart-modal-cancel-btn');
@@ -369,6 +435,8 @@ export function setupPreventivaPage() {
         }
     });
 
+    vacinasTable?.addEventListener('change', handleVaccineDateChange);
+
     const closeChartModal = () => {
         if (chartModal) {
             chartModal.classList.remove('visible');
@@ -377,14 +445,6 @@ export function setupPreventivaPage() {
     };
     closeChartModalBtn?.addEventListener('click', closeChartModal);
     cancelChartModalBtn?.addEventListener('click', closeChartModal);
-
-    // Goal Handlers
-    elements.goalsForm?.addEventListener('submit', handleAddGoal);
-    elements.goalsList?.addEventListener('click', handleGoalAction);
-    elements.goalAIBtn?.addEventListener('click', () => {
-        const prompt = "Sugira um objetivo de saúde preventiva, como 'Agendar check-up anual com clínico geral' ou 'Realizar autoexame da pele mensalmente'.";
-        window.getAISuggestionForInput(prompt, elements.goalInput!, elements.goalAIBtn!);
-    });
 }
 
 export function showPreventivaPage() {

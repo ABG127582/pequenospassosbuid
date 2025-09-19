@@ -10,52 +10,31 @@
             <!-- Menu Principal da Saúde Preventiva -->
             <div id="preventivaMainMenu" class="preventiva-page active">
                 <div class="menu-grid">
-                    <div class="menu-item" data-target="preventivaVacinas" role="button" tabindex="0" aria-label="Acessar calendário de vacinação">
+                    <button class="menu-item" data-target="preventivaVacinas" aria-label="Acessar calendário de vacinação">
                         <span class="icon"><i class="fas fa-syringe"></i></span>
                         <h3>Vacinação</h3>
-                    </div>
-                    <div class="menu-item" data-target="preventivaExames" role="button" tabindex="0" aria-label="Acessar indicadores de saúde e exames">
+                    </button>
+                    <button class="menu-item" data-target="preventivaExames" aria-label="Acessar indicadores de saúde e exames">
                         <span class="icon"><i class="fas fa-stethoscope"></i></span>
                         <h3>Biomarcadores</h3>
-                    </div>
-                    <div class="menu-item" data-target="preventivaProtocolo" role="button" tabindex="0" aria-label="Acessar protocolo pessoal de suplementação">
+                    </button>
+                    <button class="menu-item" data-target="preventivaProtocolo" aria-label="Acessar protocolo pessoal de suplementação">
                         <span class="icon"><i class="fas fa-pills"></i></span>
                         <h3>Protocolo Pessoal</h3>
-                    </div>
-                    <div class="menu-item" data-target="preventivaDiagnosticos" role="button" tabindex="0" aria-label="Acessar diagnósticos e fatores de risco">
+                    </button>
+                    <button class="menu-item" data-target="preventivaDiagnosticos" aria-label="Acessar diagnósticos e fatores de risco">
                         <span class="icon"><i class="fas fa-file-medical-alt"></i></span>
                         <h3>Diagnósticos e Riscos</h3>
-                    </div>
-                    <div class="menu-item" data-target="preventivaMetas" role="button" tabindex="0" aria-label="Acessar metas de saúde preventiva">
-                        <span class="icon"><i class="fas fa-bullseye"></i></span>
-                        <h3>Metas Preventivas</h3>
-                    </div>
-                     <div class="menu-item" data-target="preventivaHistorico" role="button" tabindex="0" aria-label="Acessar histórico de indicadores">
+                    </button>
+                    <button class="menu-item" data-target="preventivaHistorico" aria-label="Acessar histórico de indicadores">
                         <span class="icon"><i class="fas fa-history"></i></span>
                         <h3>Histórico</h3>
-                    </div>
+                    </button>
+                    <button class="menu-item" data-target="preventivaRecursos" aria-label="Acessar recursos úteis">
+                        <span class="icon"><i class="fas fa-book-open"></i></span>
+                        <h3>Recursos Úteis</h3>
+                    </button>
                 </div>
-                <section class="resources-section content-section" style="margin-top: 30px;">
-                    <h2 class="section-title">Recursos Úteis</h2>
-                    <ul class="recursos-list">
-                        <li><a href="https://blueprint.bryanjohnson.com/" target="_blank" rel="noopener noreferrer">Protocolo Blueprint de Bryan Johnson (Otimização de Saúde)</a></li>
-                    </ul>
-                </section>
-            </div>
-             <!-- Subpágina: Metas Preventivas -->
-            <div id="preventivaMetas" class="preventiva-page">
-                <section class="form-section content-section">
-                    <h2 class="section-title">Objetivos de Saúde Preventiva</h2>
-                    <ul id="preventiva-metas-list" class="lista-planejamento"></ul>
-                    <form id="preventiva-metas-form">
-                        <label for="preventiva-meta-input">Novo Objetivo Preventivo:</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="preventiva-meta-input" required placeholder="Ex: Agendar check-up anual, Realizar autoexame mensal">
-                            <button type="button" id="preventiva-meta-input-ai-btn" class="ai-suggestion-btn" title="Sugerir com IA"><i class="fas fa-wand-magic-sparkles"></i><i class="fas fa-spinner fa-spin"></i></button>
-                        </div>
-                        <button type="submit" class="standard-button">Adicionar Objetivo</button>
-                    </form>
-                </section>
             </div>
 
             <!-- Subpágina: Vacinação -->
@@ -374,6 +353,16 @@
                             </tbody>
                          </table>
                      </div>
+                </section>
+            </div>
+
+             <!-- Subpágina: Recursos Úteis -->
+            <div id="preventivaRecursos" class="preventiva-page">
+                 <section class="resources-section content-section">
+                    <h2 class="section-title">Recursos Úteis</h2>
+                    <ul class="recursos-list">
+                        <li><a href="https://blueprint.bryanjohnson.com/" target="_blank" rel="noopener noreferrer">Protocolo Blueprint de Bryan Johnson (Otimização de Saúde)</a></li>
+                    </ul>
                 </section>
             </div>
         </main>

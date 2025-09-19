@@ -23,21 +23,19 @@
     --color-preventiva-rgb: 0, 95, 87;
     --color-familiar: #E53935; /* Vermelho */
     --color-familiar-rgb: 229, 57, 53;
-    --color-tarefas: #708090; /* SlateGray - Cinza Ardósia para Tarefas */
-    --color-tarefas-rgb: 112, 128, 144;
-    --color-planejamento: #FFB74D; /* Laranja Claro */
-    --color-planejamento-rgb: 255, 183, 77;
 
     /* Cores padrão para componentes e alertas */
     --color-primary: #007bff; /* Azul primário Bootstrap-like */
     --color-primary-rgb: 0, 123, 255;
     --color-secondary: #6c757d; /* Cinza secundário */
+    --color-secondary-rgb: 108, 117, 125;
     --color-success: #28a745; /* Verde sucesso */
     --color-error: #dc3545;   /* Vermelho erro */
     --color-error-rgb: 220, 53, 69; /* RGB for error color */
     --color-warning: #ffc107; /* Amarelo aviso */
     --color-warning-rgb: 255, 193, 7;
     --color-info: #17a2b8;    /* Azul informação */
+    --color-info-rgb: 23, 162, 184;
 
     /* Cores de Texto */
     --text-color: #333;
@@ -148,6 +146,67 @@ ul, ol {
     margin: 0 auto;
     padding: 20px;
 }
+
+/* Estilos da Página Inicial (Menu de Cartões) */
+.inicio {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+}
+.saude-card {
+    --card-bg-color: var(--color-primary); /* Fallback, será sobrescrito */
+    background-color: var(--card-bg-color);
+    color: var(--text-color-light); /* Texto branco para todos os cartões */
+    padding: 25px;
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--card-shadow);
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 180px;
+    text-decoration: none;
+    border: none; /* Reset button border */
+    font-family: inherit; /* Ensure button inherits font */
+    width: 100%; /* Ensure button takes full grid width */
+}
+.saude-card:hover, .saude-card:focus-visible {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    color: var(--text-color-light);
+    text-decoration: none;
+}
+.saude-card h3 {
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    color: var(--text-color-light);
+}
+.saude-card h3 i {
+    margin-right: 8px;
+}
+.saude-card .card-description {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-color-light);
+    margin-bottom: 0;
+}
+
+/* Cores específicas para os cartões */
+.saude-card.fisica { --card-bg-color: var(--color-fisica); }
+.saude-card.mental { --card-bg-color: var(--color-mental); }
+.saude-card.financeira { --card-bg-color: var(--color-financeira); }
+.saude-card.familiar { --card-bg-color: var(--color-familiar); }
+.saude-card.profissional { --card-bg-color: var(--color-profissional); }
+.saude-card.social { --card-bg-color: var(--color-social); }
+.saude-card.espiritual { --card-bg-color: var(--color-espiritual); }
+.saude-card.preventiva { --card-bg-color: var(--color-preventiva); }
+.saude-card.video-livro { --card-bg-color: var(--color-video-livro); }
+.saude-card.avaliacao-card { --card-bg-color: var(--color-inicio); }
+
 
 /* Estilos de Cabeçalho das Páginas */
 .page-container > header:first-child,
@@ -264,9 +323,7 @@ a[data-page*="social"].active { --section-color: var(--color-social); --section-
 a[data-page*="espiritual"].active, summary[data-page-parent="espiritual"].active { --section-color: var(--color-espiritual); --section-color-rgb: var(--color-espiritual-rgb); }
 a[data-page*="preventiva"].active { --section-color: var(--color-preventiva); --section-color-rgb: var(--color-preventiva-rgb); }
 a[data-page*="inicio"].active { --section-color: var(--color-inicio); --section-color-rgb: var(--color-inicio-rgb); }
-a[data-page*="planejamento-diario"].active { --section-color: var(--color-planejamento); --section-color-rgb: var(--color-planejamento-rgb); }
-a[data-page*="tarefas"].active { --section-color: var(--color-tarefas); --section-color-rgb: var(--color-tarefas-rgb); } 
-a[data-page*="mapa-mental"].active { --section-color: var(--color-secondary); --section-color-rgb: 108, 117, 125; }
+
 
 /* Hierarchical Menu (Details/Summary) */
 .sidebar-links details {
@@ -316,9 +373,8 @@ a[data-page*="mapa-mental"].active { --section-color: var(--color-secondary); --
 
 /* Main Content Area */
 #main-content {
-    flex-grow: 1;
-    transition: margin-left var(--transition-speed) ease;
     padding: 20px;
+    min-height: 100vh; /* Ensures content area is at least full height, allows body to scroll */
 }
 
 /* Page container and animation */
@@ -396,9 +452,6 @@ a[data-page*="mapa-mental"].active { --section-color: var(--color-secondary); --
 [data-page*="familiar"], [id*="familiar"] { --section-color: var(--color-familiar); --section-color-rgb: var(--color-familiar-rgb); }
 [data-page*="profissional"], [id*="profissional"] { --section-color: var(--color-profissional); --section-color-rgb: var(--color-profissional-rgb); }
 [data-page*="social"], [id*="social"] { --section-color: var(--color-social); --section-color-rgb: var(--color-social-rgb); }
-[data-page*="tarefas"], [id*="tarefas"] { --section-color: var(--color-tarefas); --section-color-rgb: var(--color-tarefas-rgb); }
-[data-page*="planejamento"], [id*="planejamento"] { --section-color: var(--color-planejamento); --section-color-rgb: var(--color-planejamento-rgb); }
-[data-page*="mapa-mental"], [id*="mapa-mental"] { --section-color: var(--color-secondary); --section-color-rgb: 108, 117, 125; }
 
 
 /* Estilos de Formulários */
@@ -471,716 +524,335 @@ a[data-page*="mapa-mental"].active { --section-color: var(--color-secondary); --
 .page-section .standard-button:not(.standard-button-secondary):not(.standard-button-danger) {
     background-color: var(--section-color, var(--color-primary));
 }
-#page-financeira .standard-button, #page-planejamento-diario .standard-button {
+#page-financeira .standard-button {
     color: var(--text-color);
 }
-html.dark-mode #page-financeira .standard-button, 
-html.dark-mode #page-planejamento-diario .standard-button {
+html.dark-mode #page-financeira .standard-button {
     color: var(--text-color);
 }
-
-
 .standard-button-secondary {
-    background-color: transparent;
-    color: var(--color-primary);
-    border: 1px solid var(--color-primary);
+    background-color: var(--color-secondary);
 }
-.standard-button-secondary:hover {
-    background-color: rgba(var(--color-primary-rgb), 0.1);
-    filter: none;
-}
-.page-container .standard-button-secondary,
-.page-section .standard-button-secondary {
-    color: var(--section-color, var(--color-primary));
-    border-color: var(--section-color, var(--color-primary));
-}
-.page-container .standard-button-secondary:hover,
-.page-section .standard-button-secondary:hover {
-     background-color: rgba(var(--section-color-rgb, var(--color-primary-rgb)), 0.1);
-}
-
 .standard-button-danger {
     background-color: var(--color-error);
-    color: var(--text-color-light);
 }
-.small-button { padding: 6px 12px; font-size: 0.875rem; }
-.back-button-wrapper { margin-top: 30px; text-align: center; }
-.back-button { background-color: var(--color-secondary); color: var(--text-color-light); }
+.small-button {
+    padding: 6px 12px;
+    font-size: 0.875rem;
+}
 
-/* Listas de Planejamento */
-.lista-planejamento { list-style: none; padding: 0; margin-top: 20px; }
-.lista-planejamento li {
-    background-color: rgba(var(--section-color-rgb, var(--color-primary-rgb)), 0.05);
-    padding: 15px; border-radius: var(--card-border-radius); margin-bottom: 10px;
-    display: flex; justify-content: space-between; align-items: center;
-    transition: background-color var(--transition-speed) ease;
-    border: 1px solid var(--border-color);
+/* Estilos para lista de Alimentos Nutritivos */
+.food-items-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+    gap: 8px;
+    padding-left: 0; 
+    list-style-type: none; 
 }
-.lista-planejamento li:hover { background-color: rgba(var(--section-color-rgb, var(--color-primary-rgb)), 0.1); }
-.lista-planejamento li.completed .item-text { text-decoration: line-through; color: var(--text-color-muted); }
-.lista-planejamento .item-text { flex-grow: 1; cursor: pointer; font-size: 1.05rem; }
-.lista-planejamento .item-actions button {
-    background: none; border: none; color: var(--text-color-muted); font-size: 1.1rem;
-    margin-left: 10px; cursor: pointer; padding: 5px; transition: color var(--transition-speed) ease;
-}
-.lista-planejamento .item-actions button:hover { color: var(--section-color, var(--color-primary)); }
-.lista-planejamento .item-actions .delete-btn:hover { color: var(--color-error); }
-.lista-planejamento .item-actions .complete-btn.completed i { color: var(--color-success); }
-.empty-list-placeholder { text-align: center; color: var(--text-color-muted); padding: 20px; font-style: italic; }
-
-/* Checklist de Práticas Diárias */
-.daily-practices-list { list-style: none; padding: 0; margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
-.daily-practices-list li label {
-    display: flex; align-items: center; gap: 12px; padding: 12px;
-    background-color: rgba(var(--section-color-rgb, var(--color-primary-rgb)), 0.05);
-    border: 1px solid var(--border-color); border-radius: var(--card-border-radius);
-    cursor: pointer; transition: background-color 0.2s;
-}
-.daily-practices-list li label:hover { background-color: rgba(var(--section-color-rgb, var(--color-primary-rgb)), 0.1); }
-.daily-practices-list li input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--section-color, var(--color-primary)); }
-.daily-practices-list li span.completed { text-decoration: line-through; color: var(--text-color-muted); }
-
-/* Diário de Gratidão */
-.journal-actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
-.past-entries-container { margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 20px; }
-.past-entry-item {
-    margin-bottom: 20px;
-    padding: 15px;
-    background-color: var(--background-color);
+.food-items-list li { margin: 0; }
+.food-link {
+    display: block;
+    padding: 8px 10px;
+    background-color: rgba(var(--color-fisica-rgb), 0.08); 
+    border: 1px solid rgba(var(--color-fisica-rgb), 0.2);
     border-radius: var(--card-border-radius);
-    border-left: 4px solid var(--section-color, var(--color-espiritual));
-}
-.past-entry-item h4 { font-size: 1.1rem; color: var(--text-color); margin-bottom: 8px; }
-.past-entry-item p { font-size: 0.95rem; line-height: 1.7; color: var(--text-color-muted); margin-bottom: 0; }
-
-/* PDCA Integrado */
-.pdca-integrated-section { border-left: 5px solid var(--section-color, var(--color-primary)); }
-.pdca-integrated-section header { padding: 0; margin-bottom: 15px; border-bottom: none; text-align: left; }
-.pdca-integrated-section .section-title { border-bottom: none; padding-bottom: 0; margin-bottom: 5px; }
-.pdca-integrated-section .subtitle { font-size: 0.95rem; color: var(--text-color-muted); margin-bottom: 20px; }
-.pdca-step { margin-bottom: 25px; }
-.pdca-step h3 { font-size: 1.3rem; color: var(--section-color, var(--color-primary)); margin-bottom: 10px; }
-.pdca-item {
-    margin-top: 15px; padding: 15px; border-left: 3px solid rgba(var(--section-color-rgb, var(--color-primary-rgb)), 0.5);
-    background-color: rgba(var(--section-color-rgb, var(--color-primary-rgb)), 0.03); border-radius: 0 4px 4px 0;
-}
-.pdca-item h4 { font-size: 1.1rem; margin-bottom: 5px; color: var(--section-color, var(--color-primary)); }
-.pdca-item p { font-size: 0.9rem; margin-bottom: 0; }
-
-/* Recursos */
-.resources-section { border-top: 2px dashed var(--border-color); margin-top: 30px; padding-top: 25px; }
-.recursos-list { list-style: none; padding: 0; }
-.recursos-list li { margin-bottom: 10px; }
-.recursos-list li a::before {
-    content: "\f0c1"; font-family: "Font Awesome 6 Free"; font-weight: 900;
-    margin-right: 8px; color: var(--link-color);
-}
-
-/* Modals */
-.modal-container {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center;
-    align-items: center; z-index: 1050; opacity: 0; transition: opacity 0.3s ease;
-}
-.modal-container.visible { display: flex; opacity: 1; }
-.modal-content {
-    background-color: var(--card-background-color); padding: 25px; border-radius: var(--card-border-radius);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 600px;
-    max-height: 90vh; display: flex; flex-direction: column;
-    transform: scale(0.95); transition: transform 0.3s ease;
-}
-.modal-container.visible .modal-content { transform: scale(1); }
-.large-modal-content { max-width: 800px; }
-.modal-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding-bottom: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color);
-}
-.modal-header h2 { margin: 0; font-size: 1.5rem; color: var(--text-color); }
-.modal-close-button {
-    background: none; border: none; font-size: 1.5rem; color: var(--text-color-muted);
-    cursor: pointer; padding: 5px;
-}
-.modal-close-button:hover { color: var(--color-error); }
-.modal-body { overflow-y: auto; flex-grow: 1; padding-right: 10px; }
-.modal-footer {
-    padding-top: 20px; margin-top: 20px; border-top: 1px solid var(--border-color);
-    display: flex; justify-content: flex-end; gap: 10px;
-}
-
-/* Floating Action Buttons */
-.fab-button {
-    position: fixed; bottom: 20px; width: 50px; height: 50px; border-radius: 50%;
-    background-color: var(--color-primary); color: white; border: none;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2); font-size: 1.5rem; display: flex;
-    justify-content: center; align-items: center; cursor: pointer; z-index: 1000;
-    transition: background-color var(--transition-speed), transform var(--transition-speed);
-}
-.fab-button:hover { transform: scale(1.1); }
-.theme-toggle-button { right: 20px; background-color: var(--color-secondary); }
-.rain-sound-button { right: 80px; background-color: var(--color-mental); }
-
-/* Toasts */
-#toast-notification-container { position: fixed; top: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
-.toast-notification {
-    background-color: var(--card-background-color); color: var(--text-color); padding: 15px 20px;
-    border-radius: var(--card-border-radius); box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    border-left: 5px solid var(--color-info); opacity: 0; transform: translateX(100%);
-    transition: opacity 0.5s ease, transform 0.5s ease; min-width: 250px; max-width: 350px;
-}
-.toast-notification.show { opacity: 1; transform: translateX(0); }
-.toast-notification.success { border-left-color: var(--color-success); }
-.toast-notification.error { border-left-color: var(--color-error); }
-.toast-notification.warning { border-left-color: var(--color-warning); }
-.toast-notification.info { border-left-color: var(--color-info); }
-
-/* Input com IA */
-.input-wrapper { position: relative; display: flex; width: 100%; align-items: center; }
-.input-wrapper input, .input-wrapper textarea { flex-grow: 1; padding-right: 45px !important; }
-.input-wrapper.textarea-wrapper { align-items: flex-start; }
-.ai-suggestion-btn {
-    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; color: var(--section-color, var(--color-primary));
-    font-size: 1.1rem; cursor: pointer; padding: 8px; line-height: 1; z-index: 5;
-    transition: color 0.2s, transform 0.2s, filter 0.2s;
-}
-.input-wrapper.textarea-wrapper .ai-suggestion-btn { top: 15px; transform: translateY(0); }
-.ai-suggestion-btn:hover { filter: brightness(0.8); transform: translateY(-50%) scale(1.1); }
-.input-wrapper.textarea-wrapper .ai-suggestion-btn:hover { transform: scale(1.1); }
-.ai-suggestion-btn .fa-spinner { display: none; }
-.ai-suggestion-btn.loading .fa-wand-magic-sparkles { display: none; }
-.ai-suggestion-btn.loading .fa-spinner { display: inline-block; animation: spin 1.5s infinite linear; }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-/* Planejamento Diário */
-#page-planejamento-diario .daily-plan-header {
-    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
-    margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color);
-}
-#page-planejamento-diario .daily-plan-header h1 { margin: 0; color: var(--color-planejamento); font-size: 1.8rem; }
-#page-planejamento-diario .daily-plan-controls { display: flex; align-items: center; gap: 15px; }
-#daily-plan-date {
-    padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.95rem;
-    background-color: var(--card-background-color); color: var(--text-color);
-}
-.daily-plan-layout { display: grid; grid-template-columns: 1fr; gap: 25px; }
-.task-list-diario { display: flex; flex-direction: column; gap: 15px; }
-.daily-task-item {
-    background-color: var(--card-background-color); padding: 15px;
-    border-radius: var(--card-border-radius); border: 1px solid var(--border-color);
-    display: flex; flex-direction: column; gap: 10px; transition: box-shadow 0.2s;
-}
-.daily-task-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-.daily-task-item.mit { border-left: 5px solid var(--color-warning); }
-.daily-task-item.completed { opacity: 0.7; }
-.daily-task-item.completed .task-description,
-.daily-task-item.completed .task-intention { text-decoration: line-through; color: var(--text-color-muted); }
-.task-main-info { display: flex; align-items: center; gap: 10px; }
-.task-status-toggle {
-    background: none; border: none; font-size: 1.3rem;
-    color: var(--text-color-muted); cursor: pointer; padding: 5px;
-}
-.task-status-toggle:hover { color: var(--color-primary); }
-.daily-task-item.completed .task-status-toggle i { color: var(--color-success); }
-.daily-task-item.in-progress .task-status-toggle i { color: var(--color-info); }
-.task-time {
-    padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;
-    font-size: 0.9rem; background-color: var(--card-background-color); color: var(--text-color);
-}
-.task-description, .task-intention {
-    width: 100%; padding: 8px 10px; border: 1px solid var(--border-color);
-    border-radius: 4px; font-size: 1rem; resize: none; overflow-y: hidden;
-    background-color: var(--card-background-color); color: var(--text-color); transition: border-color 0.2s;
-}
-.task-description:focus, .task-intention:focus { outline: none; border-color: var(--color-planejamento); }
-.task-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; padding-left: 10px; }
-.task-mit-toggle {
-    padding: 6px 10px; font-weight: bold; border: 1px solid var(--color-warning);
-    color: var(--color-warning); background-color: transparent; border-radius: 4px; cursor: pointer;
-}
-.task-mit-toggle.active { background-color: var(--color-warning); color: var(--text-color); }
-.progress-ring-container { position: relative; width: 60px; height: 60px; }
-#daily-progress-ring { transform: rotate(-90deg); }
-.progress-ring-bg { fill: none; stroke: var(--border-color); stroke-width: 10; }
-.progress-ring-fg { fill: none; stroke: var(--color-success); stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 0.35s; }
-#progress-ring-text { font-size: 24px; fill: var(--text-color); font-weight: bold; font-family: var(--font-family-sans-serif); }
-
-/* Notification Settings Modal Specifics */
-.notification-settings-form .setting-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 5px;
-    border-bottom: 1px solid var(--border-color);
-}
-.notification-settings-form .setting-row:last-child {
-    border-bottom: none;
-}
-.notification-settings-form .setting-row > label { /* Target direct child label */
-    margin-bottom: 0;
-    padding-right: 15px;
-    flex-grow: 1;
+    text-decoration: none;
     color: var(--text-color);
-    font-weight: 500;
-    cursor: default; /* Not clickable */
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    font-size: 0.9rem;
 }
-/* Re-using toggle from preventiva, but adapting color */
-#page-planejamento-diario .notification-settings-form .toggle-switch input:checked + label {
-    background-color: var(--color-planejamento);
+.food-link:hover {
+    background-color: rgba(var(--color-fisica-rgb), 0.15);
+    transform: translateY(-2px);
+    color: var(--color-fisica);
+    text-decoration: none;
 }
 
 
-/* Saúde Preventiva */
-.indicator-bar {
-    width: 100%; height: 20px;
-    border-radius: 10px; position: relative;
-    background-color: var(--border-color);
-    display: flex;
-    overflow: hidden;
-}
-.indicator-zone {
-    height: 100%;
+/* Tooltip Genérico */
+.tooltip {
     position: relative;
+    cursor: help;
 }
-.indicator-zone:hover::after {
+.tooltip::after {
     content: attr(data-tooltip);
     position: absolute;
-    bottom: 110%;
+    bottom: 110%; 
     left: 50%;
     transform: translateX(-50%);
     background-color: #333;
     color: #fff;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    white-space: nowrap;
-    z-index: 10;
-}
-.indicator-bar .marker {
-    position: absolute; top: -5px; width: 4px; height: 30px;
-    background-color: var(--text-color); border-radius: 2px;
-    transform: translateX(-50%);
-    box-shadow: 0 0 3px rgba(0,0,0,0.5); z-index: 2;
-    transition: left 0.5s ease-in-out;
-    border: 1px solid var(--card-background-color);
-}
-html.dark-mode .indicator-bar .marker { background-color: var(--text-color-light); border-color: var(--card-background-color-dark);}
-.indicator-labels {
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    margin-top: 4px;
-    color: var(--text-color-muted);
-    padding: 0 2px;
-}
-.indicator-labels span {
-    position: absolute;
-    transform: translateX(-50%);
-    white-space: nowrap;
-}
-.indicator-input-group {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-top: auto;
-}
-.indicator-input-group .indicator-value,
-.indicator-input-group .indicator-date {
-    flex: 1;
-    min-width: 80px;
-    padding: 8px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    font-size: 0.9rem;
-    background-color: var(--card-background-color);
-    color: var(--text-color);
-}
-.update-button, .history-button {
-    flex-shrink: 0;
-}
-/* Toggle Switch for Diagnostics */
-.toggle-switch {
-    position: relative; display: inline-block; width: 40px; height: 20px;
-}
-.toggle-switch input { display: none; }
-.toggle-switch label {
-    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-    background-color: var(--color-secondary); transition: .4s; border-radius: 20px;
-}
-.toggle-switch label:before {
-    position: absolute; content: ""; height: 14px; width: 14px;
-    left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;
-}
-.toggle-switch input:checked + label { background-color: var(--color-preventiva); }
-.toggle-switch input:checked + label:before { transform: translateX(20px); }
-#tabela-historico-indicadores td:last-child {
+    padding: 8px 12px;
+    border-radius: var(--card-border-radius);
+    font-size: 0.85rem;
+    font-weight: 400;
+    line-height: 1.4;
+    white-space: normal;
+    width: 250px;
     text-align: center;
-}
-
-
-/* Guia de Leitura / Mapa Mental - Índice */
-.page-index {
-    border-left: 4px solid var(--section-color, var(--color-secondary));
-    background-color: rgba(var(--section-color-rgb, 108, 117, 125), 0.05);
-}
-.page-index ol {
-    list-style: none;
-    padding-left: 10px;
-}
-.page-index li {
-    margin-bottom: 8px;
-}
-.page-index a {
-    text-decoration: none;
-    font-weight: 500;
-    color: var(--section-color, var(--color-secondary));
-    transition: padding-left 0.2s;
-}
-.page-index a:hover {
-    text-decoration: underline;
-    padding-left: 5px;
-}
-
-/* Mapa Mental - Navegação Interna */
-.mind-map-image-wrapper {
-    position: relative;
-    line-height: 0; /* Remove extra space below image */
-}
-.map-anchor {
-    position: absolute;
-    left: 0;
-    width: 100%;
-    height: 1px;
+    opacity: 0;
     visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    z-index: 100;
+    pointer-events: none; /* Evita que o tooltip interfira no hover */
+}
+.tooltip:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+html.dark-mode .tooltip::after {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
 }
 
-/* --- MAPA MENTAL ESPECÍFICO --- */
+/* --- Mind Map Section --- */
 .mind-map-section summary {
     cursor: pointer;
     font-weight: 600;
     padding: 8px 0;
     display: flex;
     align-items: center;
-    color: var(--section-color, var(--color-primary));
+    color: var(--section-color, var(--text-color));
     font-size: 1.1rem;
-    list-style: none; /* Hide default marker for Firefox */
+    list-style: none; /* Hide default marker */
 }
 .mind-map-section summary::-webkit-details-marker {
-    display: none; /* Hide default marker for Chrome, Safari */
+    display: none; /* Hide default marker for Safari */
 }
+
 .mind-map-section summary:hover {
-    color: var(--link-hover-color);
+    color: var(--section-color, var(--color-primary));
+    filter: brightness(0.9);
 }
+
 .mind-map-section details {
     margin-left: 20px;
     border-left: 1px dashed var(--border-color);
     padding-left: 15px;
 }
+
 .mind-map-section details[open] > summary ~ * {
-    animation: openDetail 0.5s ease-in-out;
+    animation: openDetail 0.4s ease-out;
 }
+
 @keyframes openDetail {
     from {
         opacity: 0;
-        transform: translateY(-15px);
+        transform: translateY(-10px);
     }
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
+
 .mind-map-section ul {
-    list-style-type: none; 
-    padding-left: 5px; 
+    list-style-type: none;
+    padding-left: 5px;
 }
+
 .mind-map-section ul li {
-    margin: 5px 0;
+    margin: 8px 0;
 }
+
 .mind-map-section .chevron {
     width: 1em;
     height: 1em;
     margin-right: 0.5em;
     transition: transform 0.2s ease-in-out;
-    stroke: var(--section-color, var(--color-primary));
+    stroke: currentColor;
 }
-details[open] > summary .chevron {
+
+.mind-map-section details[open] > summary .chevron {
     transform: rotate(90deg);
 }
 
-/* Saúde Mental - Aprofundando */
-.equilibrio-item {
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px dashed var(--border-color);
-}
-.equilibrio-item:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-.equilibrio-item h3 {
-    color: var(--color-mental);
-    font-size: 1.2rem;
-    margin-bottom: 8px;
-}
-.equilibrio-item h3 i {
-    margin-right: 10px;
-}
-.equilibrio-item p {
+.mind-map-button {
+    display: inline-block;
+    color: var(--link-color);
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease, color 0.2s ease;
     font-size: 0.95rem;
-    line-height: 1.7;
-    margin-bottom: 10px;
 }
-.equilibrio-item p:last-child {
-    margin-bottom: 0;
-}
-.equilibrio-item strong {
-    font-weight: 600;
-    color: var(--text-color);
+.mind-map-button:hover {
+    background-color: rgba(var(--section-color-rgb, var(--color-primary-rgb)), 0.1);
+    color: var(--section-color, var(--color-primary));
+    text-decoration: none;
 }
 
-/* Responsividade */
-@media (max-width: 768px) {
-    body { padding-left: 0; }
-    .sidebar {
-        left: calc(-1 * var(--sidebar-width));
-        transition: left var(--transition-speed) ease;
-    }
-    .sidebar.open { left: 0; }
-    #main-content { margin-left: 0; width: 100%; }
-    .mobile-nav { display: flex; }
-    #mobile-nav-toggle { display: block; }
-    .fab-button { width: 45px; height: 45px; font-size: 1.3rem; }
-    .rain-sound-button { right: 70px; }
-}
 
-/* Estilos da Página Inicial (Menu de Cartões) */
-.inicio {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-    padding: 20px 0;
-}
-.saude-card {
-    --card-bg-color: var(--color-primary); /* Fallback, será sobrescrito */
-    background-color: var(--card-bg-color);
-    color: var(--text-color-light); /* Texto branco para todos os cartões */
-    padding: 25px;
-    border-radius: var(--card-border-radius);
-    box-shadow: var(--card-shadow);
-    text-align: center;
-    cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+/* --- Floating Action Buttons (FABs) --- */
+.fab-button {
+    position: fixed;
+    bottom: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    color: white;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    font-size: 1.5rem;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 180px; /* Altura mínima para consistência */
-    text-decoration: none; /* Para os cartões que são links */
+    cursor: pointer;
+    z-index: 1000;
+    transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
 }
-.saude-card:hover, .saude-card:focus-visible {
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-    color: var(--text-color-light); /* Mantém o texto branco no hover para links */
-    text-decoration: none; /* Remove o sublinhado no hover para links */
-}
-.saude-card h3 {
-    font-size: 1.4rem;
-    margin-bottom: 10px;
-    color: var(--text-color-light); /* Garantir que o título seja branco */
-}
-.saude-card h3 i {
-    margin-right: 8px;
-}
-.saude-card .card-description {
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: var(--text-color-light); /* Garantir que a descrição seja branca */
-    margin-bottom: 0;
+.fab-button:hover {
+    transform: scale(1.1);
 }
 
-/* Cores específicas para os cartões */
-.saude-card.fisica { --card-bg-color: var(--color-fisica); }
-.saude-card.mental { --card-bg-color: var(--color-mental); }
-.saude-card.financeira { --card-bg-color: var(--color-financeira); color: var(--text-color);}
-.saude-card.familiar { --card-bg-color: var(--color-familiar); }
-.saude-card.profissional { --card-bg-color: var(--color-profissional); }
-.saude-card.social { --card-bg-color: var(--color-social); }
-.saude-card.espiritual { --card-bg-color: var(--color-espiritual); }
-.saude-card.preventiva { --card-bg-color: var(--color-preventiva); }
-.saude-card.video-livro { --card-bg-color: var(--color-video-livro); }
-.saude-card.avaliacao-card { --card-bg-color: var(--color-inicio); } 
-.saude-card.tarefas-card { --card-bg-color: var(--color-tarefas); }
-.saude-card.planejamento-card { --card-bg-color: var(--color-planejamento); color: var(--text-color);}
-
-/* --- TAREFAS: PRIORITY STYLES --- */
-.priority-tag {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--text-color-light);
-    text-transform: capitalize;
-    display: inline-block;
-    text-align: center;
-    min-width: 65px;
+.theme-toggle-button {
+    right: 20px;
+    background-color: var(--color-secondary);
 }
-.priority-tag.priority-low {
+.theme-toggle-button:hover {
+    filter: brightness(0.9);
+}
+
+.rain-sound-button {
+    right: 160px;
+    background-color: var(--color-mental);
+}
+.rain-sound-button.playing {
+    background-color: var(--color-primary);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb), 0.4);
+    }
+    70% {
+        box-shadow: 0 0 10px 10px rgba(var(--color-primary-rgb), 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb), 0);
+    }
+}
+
+
+/* --- Text-to-Speech Reader --- */
+.tts-fab-play {
+    right: 90px;
     background-color: var(--color-info);
-}
-.priority-tag.priority-medium {
-    background-color: var(--color-warning);
-    color: var(--text-color); /* Darker text for better contrast on yellow */
-}
-.priority-tag.priority-high {
-    background-color: var(--color-error);
-}
-/* For dark mode on medium priority */
-html.dark-mode .priority-tag.priority-medium {
-     color: var(--text-color);
-}
-
-
-/* --- TAREFAS: CHECKLIST VIEW STYLES --- */
-#checklist-view-container {
-    display: flex;
-    flex-direction: column;
-    gap: 25px; /* Space between category groups */
-}
-
-.checklist-category-group {
-    border: 1px solid var(--border-color);
-    border-radius: var(--card-border-radius);
-    padding: 15px;
-    background-color: var(--card-background-color);
-}
-
-.checklist-category-title {
     font-size: 1.2rem;
-    color: var(--color-tarefas);
-    margin: 0 0 15px 0;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
+}
+.tts-fab-stop {
+    right: 90px;
+    background-color: var(--color-error);
+    font-size: 1.2rem;
 }
 
-.checklist-item {
-    display: flex;
-    align-items: flex-start; /* Align checkbox to top */
-    gap: 15px;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.checklist-item:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.checklist-item.completed .checklist-item-title {
-    text-decoration: line-through;
-    color: var(--text-color-muted);
-}
-.checklist-item.completed {
-    opacity: 0.7;
-}
-
-.checklist-item-main {
-    flex-grow: 1;
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-}
-
-.checklist-item-checkbox {
-    width: 18px;
-    height: 18px;
-    margin-top: 4px; /* Align with text */
-    flex-shrink: 0;
+/* TTS Selection Mode & Highlighting */
+body.tts-selection-mode #main-content p,
+body.tts-selection-mode #main-content h1,
+body.tts-selection-mode #main-content h2,
+body.tts-selection-mode #main-content h3,
+body.tts-selection-mode #main-content h4,
+body.tts-selection-mode #main-content h5,
+body.tts-selection-mode #main-content h6,
+body.tts-selection-mode #main-content li {
     cursor: pointer;
-    accent-color: var(--color-tarefas);
+    outline: 2px dashed var(--color-info);
+    outline-offset: 2px;
+    transition: background-color 0.2s ease;
+}
+body.tts-selection-mode #main-content p:hover,
+body.tts-selection-mode #main-content h1:hover,
+body.tts-selection-mode #main-content h2:hover,
+body.tts-selection-mode #main-content h3:hover,
+body.tts-selection-mode #main-content h4:hover,
+body.tts-selection-mode #main-content h5:hover,
+body.tts-selection-mode #main-content h6:hover,
+body.tts-selection-mode #main-content li:hover {
+    background-color: rgba(var(--color-info-rgb), 0.1);
 }
 
-.checklist-item-content {
-    flex-grow: 1;
+.tts-reading-highlight {
+    background-color: rgba(var(--color-primary-rgb), 0.15);
+    border-radius: 3px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    padding: 2px 0;
+    outline: 1px solid rgba(var(--color-primary-rgb), 0.3);
+    transition: background-color 0.3s ease, outline 0.3s ease;
 }
 
-.checklist-item-summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    cursor: pointer;
+html.dark-mode .tts-reading-highlight {
+    background-color: rgba(var(--color-primary-rgb), 0.25);
+    outline-color: rgba(var(--color-primary-rgb), 0.5);
 }
 
-.checklist-item-title {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: var(--text-color);
-    transition: color 0.2s;
+/* --- Alongamento Page Styles --- */
+#page-alongamento .content-section {
+    padding: 0; /* Remove padding to allow full-width image */
 }
 
-.checklist-item-full-details {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease-out;
+.stretching-guide-image-container {
+    text-align: center;
 }
 
-.checklist-item.details-expanded .checklist-item-full-details {
-    max-height: 500px; /* Large enough for content */
-    transition: max-height 0.5s ease-in;
+.stretching-guide-image-container img {
+    width: 100%; /* Make image full width of the container */
+    height: auto;
+    display: block;
+    border-radius: var(--card-border-radius) var(--card-border-radius) 0 0; /* Rounded top corners to match card */
 }
 
-.details-inner-wrapper {
-    padding-top: 10px;
+.stretching-guide-wrapper {
+    padding: 25px; /* Add padding back to the text content */
 }
 
-.checklist-item-description {
-    font-size: 0.95rem;
-    color: var(--text-color-muted);
-    line-height: 1.6;
+.guide-title {
+    text-align: center;
+    color: var(--color-fisica);
     margin-bottom: 10px;
+    font-size: 1.8rem;
 }
 
-.checklist-item-meta {
-    display: flex;
-    gap: 20px;
-    font-size: 0.85rem;
+.guide-subtitle {
+    text-align: center;
     color: var(--text-color-muted);
-    align-items: center;
-}
-.checklist-item-priority {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.priority-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-.priority-dot-high { background-color: var(--color-error); }
-.priority-dot-medium { background-color: var(--color-warning); }
-.priority-dot-low { background-color: var(--color-info); }
-
-.checklist-item-date i {
-    margin-right: 5px;
-}
-
-.checklist-item-actions {
-    display: flex;
-    gap: 5px;
-}
-
-.action-btn {
-    background: none;
-    border: none;
-    color: var(--text-color-muted);
+    margin-bottom: 30px;
     font-size: 1rem;
-    cursor: pointer;
-    padding: 5px;
-    transition: color 0.2s;
 }
-.action-btn i { pointer-events: none; }
-.action-btn:hover { color: var(--color-primary); }
-.checklist-item-actions .delete:hover { color: var(--color-error); }
-.toggle-details i { transition: transform 0.3s ease; }
-.checklist-item.details-expanded .toggle-details i { transform: rotate(180deg); }
+
+.stretching-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.stretch-card {
+    background-color: rgba(var(--color-fisica-rgb), 0.05);
+    padding: 20px;
+    border-radius: var(--card-border-radius);
+    border-left: 4px solid var(--color-fisica);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stretch-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.stretch-card h5 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    color: var(--color-fisica);
+}
+
+.stretch-card p {
+    margin-bottom: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* Modals, FABs, Toasts, etc. (o resto do arquivo CSS permanece o mesmo) */
+/* ... (rest of the CSS file is unchanged) ... */

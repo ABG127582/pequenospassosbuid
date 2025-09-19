@@ -25,7 +25,7 @@
 <body>
 
     <nav id="sidebar-menu" class="sidebar">
-        <button id="sidebar-toggle" class="sidebar-toggle-button" aria-label="Alternar menu lateral" aria-expanded="true">
+        <button id="sidebar-toggle" class="sidebar-toggle-button" aria-label="Alternar menu lateral" aria-expanded="false">
             <i class="fas fa-bars"></i>
         </button>
         
@@ -87,10 +87,7 @@
             </li>
             
             <li><a href="#preventiva" title="Saúde Preventiva" class="sidebar-link" data-page="preventiva"><i class="fas fa-shield-alt fa-fw"></i><span class="sidebar-text">Preventiva</span></a></li>
-            <li><a href="#mapa-mental" title="Mapa Mental" class="sidebar-link" data-page="mapa-mental"><i class="fas fa-project-diagram fa-fw"></i><span class="sidebar-text">Mapa Mental</span></a></li>
-            <li><a href="#planejamento-diario" title="Planejamento Diário" class="sidebar-link" data-page="planejamento-diario"><i class="fas fa-calendar-check fa-fw"></i><span class="sidebar-text">Planejamento</span></a></li>
-            <li><a href="#tarefas" title="Gerenciar Tarefas" class="sidebar-link" data-page="tarefas"><i class="fas fa-tasks fa-fw"></i><span class="sidebar-text">Tarefas</span></a></li>
-             <li><a href="#" id="open-contract-sidebar" title="Contrato de Compromisso" class="sidebar-link"><i class="fas fa-file-signature fa-fw"></i><span class="sidebar-text">Contrato</span></a></li>
+            <li><a href="#" id="open-contract-sidebar" title="Contrato de Compromisso" class="sidebar-link"><i class="fas fa-file-signature fa-fw"></i><span class="sidebar-text">Contrato</span></a></li>
         </ul>
     </nav>
 
@@ -108,6 +105,8 @@
     <button id="rain-sound-toggle" class="fab-button rain-sound-button" aria-label="Tocar som de chuva">
         <i class="fas fa-cloud-rain"></i>
     </button>
+    <button id="tts-play-btn" class="fab-button tts-fab-play" aria-label="Ler página em voz alta">▶️</button>
+    <button id="tts-stop-btn" class="fab-button tts-fab-stop" aria-label="Parar leitura" style="display: none;">⏹️</button>
     <audio id="rain-sound" src="https://www.soundjay.com/nature/sounds/rain-03.mp3" loop></audio>
 
     <!-- Global Modals -->
@@ -126,23 +125,6 @@
         </div>
     </div>
 
-    <div id="task-modal-gerenciar-tarefas" class="modal-container" role="dialog" aria-modal="true" aria-labelledby="modal-title-tarefas" style="display: none;">
-        <div class="modal-content">
-            <header class="modal-header">
-                <h2 id="modal-title-tarefas">Adicionar Tarefa</h2>
-                <button id="task-modal-close-btn" class="modal-close-button" aria-label="Fechar modal de tarefa"><i class="fas fa-times"></i></button>
-            </header>
-            <form id="task-form-gerenciar-tarefas">
-                 <div class="modal-body">
-                    <!-- Task form content from previous versions -->
-                </div>
-                <div class="modal-footer">
-                    <!-- Modal actions -->
-                </div>
-            </form>
-        </div>
-    </div>
-    
     <div id="indicator-chart-modal" class="modal-container" role="dialog" aria-modal="true" aria-labelledby="indicator-chart-modal-title">
       <div class="modal-content large-modal-content">
         <header class="modal-header">

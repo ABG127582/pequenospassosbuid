@@ -2,8 +2,6 @@
 
 const elements = {
     pageContainer: null as HTMLElement | null,
-    // FIX: Initialize with null and make the type nullable to fix the type error
-    // and align with the pattern used in other files in this project.
     indexLinks: null as NodeListOf<HTMLAnchorElement> | null,
 };
 
@@ -13,8 +11,27 @@ function handleIndexLinkClick(event: MouseEvent) {
     const anchorId = target.getAttribute('href');
     if (!anchorId) return;
 
-    const anchorElement = document.querySelector(anchorId);
-    if (anchorElement) {
+    const pageContainer = document.getElementById('page-mapa-mental');
+    if (!pageContainer) return;
+
+    const anchorElement = pageContainer.querySelector(anchorId) as HTMLElement;
+    const stickyIndex = pageContainer.querySelector('.page-index') as HTMLElement;
+
+    if (anchorElement && stickyIndex) {
+        const headerOffset = stickyIndex.offsetHeight + 20; // Extra space below the sticky header
+
+        // Calculate the anchor's position relative to the document top
+        const anchorTop = anchorElement.getBoundingClientRect().top + window.scrollY;
+
+        // Calculate the final scroll position
+        const finalScrollTop = anchorTop - headerOffset;
+
+        window.scrollTo({
+            top: finalScrollTop,
+            behavior: 'smooth'
+        });
+    } else if (anchorElement) {
+        // Fallback for safety
         anchorElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 }
@@ -27,18 +44,12 @@ export function setupMapaMentalPage() {
     };
 
     elements.indexLinks = elements.pageContainer.querySelectorAll('.page-index a');
-    // FIX: Add optional chaining to safely handle the now-nullable type of indexLinks.
     elements.indexLinks?.forEach(link => {
         link.addEventListener('click', handleIndexLinkClick);
     });
 }
 
 export function showMapaMentalPage() {
-    // No specific actions needed on page show, but function is required for the router pattern.
-    // We could scroll to the top of the page for consistency if needed.
-    const mainContent = document.getElementById('main-content');
-    if (mainContent) {
-        // Scroll to the top of the main content area, not the window
-        mainContent.scrollTop = 0;
-    }
+    // When the page is shown, scroll to the top of the window.
+    window.scrollTo(0, 0);
 }

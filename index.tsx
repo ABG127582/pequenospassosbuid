@@ -2,17 +2,14 @@
 // It handles initialization, routing, and global helper functions.
 
 import { GoogleGenAI } from "@google/genai";
-import { setupTarefasPage, showTarefasPage } from './tarefas';
 import { setupEspiritualPage, showEspiritualPage } from './espiritual';
 import { setupPreventivaPage, showPreventivaPage } from './preventiva';
-import { setupPlanejamentoDiarioPage, showPlanejamentoDiarioPage } from './planejamento-diario';
 import { setupFisicaPage, showFisicaPage } from './fisica';
 import { setupMentalPage, showMentalPage } from './mental';
 import { setupFinanceiraPage, showFinanceiraPage } from './financeira';
 import { setupFamiliarPage, showFamiliarPage } from './familiar';
 import { setupProfissionalPage, showProfissionalPage } from './profissional';
 import { setupSocialPage, showSocialPage } from './social';
-import { setupMapaMentalPage, showMapaMentalPage } from './mapa-mental';
 import { setupAlongamentoPage, showAlongamentoPage } from './alongamento';
 import { setupInicioPage, showInicioPage } from './inicio';
 import DOMPurify from 'dompurify';
@@ -30,17 +27,284 @@ declare global {
 }
 
 // --- Gemini AI Initialization ---
-const apiKey = process.env.API_KEY;
 let ai: GoogleGenAI;
 
-if (!apiKey) {
-    console.error("API key is missing. Please set API_KEY in your environment variables.");
-    document.addEventListener('DOMContentLoaded', () => {
-        document.body.innerHTML = '<div style="padding: 20px; text-align: center; font-family: sans-serif; color: #d93025;"><h1>Configuration Error</h1><p>The Google AI API key is not configured. Please contact support.</p></div>';
-    });
-} else {
-    ai = new GoogleGenAI({ apiKey });
-}
+// --- Text-to-Speech (TTS) Reader ---
+const ttsReader = {
+    isSelectionMode: false,
+    isSpeaking: false,
+    elements: [] as HTMLElement[],
+    currentIndex: 0,
+    highlightedElement: null as HTMLElement | null,
+    keepAliveInterval: undefined as number | undefined,
+    ptBrVoice: null as SpeechSynthesisVoice | null,
+    textToSpeak: null as string | null, // To start reading from a specific sentence
+    speakingSessionId: null as number | null, // To prevent race conditions with interruptions
+
+    init() {
+        const findVoice = () => {
+            const voices = speechSynthesis.getVoices();
+            const ptBrVoices = voices.filter(v => v.lang === 'pt-BR');
+    
+            if (ptBrVoices.length === 0) {
+                this.ptBrVoice = null;
+                return;
+            }
+    
+            // Prioritize voices based on quality indicators for a more pleasant sound
+            const sortedVoices = ptBrVoices.sort((a, b) => {
+                let scoreA = 0;
+                let scoreB = 0;
+    
+                // Higher score for non-local (network) voices, often higher quality
+                if (!a.localService) scoreA += 10;
+                if (!b.localService) scoreB += 10;
+    
+                // Higher score for voices from major providers
+                if (a.name.includes('Google')) scoreA += 5;
+                if (b.name.includes('Google')) scoreB += 5;
+                if (a.name.includes('Microsoft')) scoreA += 3; // Microsoft voices are also often good
+                if (b.name.includes('Microsoft')) scoreB += 3;
+                
+                // Higher score for known high-quality voice names in Portuguese
+                if (/Luciana|Felipe/i.test(a.name)) scoreA += 3;
+                if (/Luciana|Felipe/i.test(b.name)) scoreB += 3;
+    
+                // Higher score for the default voice as a fallback preference
+                if (a.default) scoreA += 1;
+                if (b.default) scoreB += 1;
+    
+                return scoreB - scoreA; // Sort descending by score
+            });
+    
+            this.ptBrVoice = sortedVoices[0] || null;
+        };
+        findVoice();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = findVoice;
+        }
+
+        const playBtn = document.getElementById('tts-play-btn');
+        const stopBtn = document.getElementById('tts-stop-btn');
+
+        playBtn?.addEventListener('click', () => this.activateSelectionMode());
+        stopBtn?.addEventListener('click', () => this.stop());
+        document.body.addEventListener('click', (e) => this.handleBodyClick(e), true);
+    },
+
+    activateSelectionMode() {
+        if (this.isSpeaking) return;
+        this.isSelectionMode = true;
+        document.body.classList.add('tts-selection-mode');
+        window.showToast("Clique em um parágrafo para começar a leitura.", 'info');
+    },
+
+    deactivateSelectionMode() {
+        this.isSelectionMode = false;
+        document.body.classList.remove('tts-selection-mode');
+    },
+
+    // Central handler for clicks on the page body
+    handleBodyClick(e: MouseEvent) {
+        // If in selection mode, or already speaking, a click on readable text should trigger speech.
+        if (this.isSelectionMode || this.isSpeaking) {
+            this.handleReadingStartOrJump(e);
+        }
+    },
+
+    // Replaces the old handleSelectionClick with new, more powerful logic
+    handleReadingStartOrJump(e: MouseEvent) {
+        const target = e.target as HTMLElement;
+        // Ignore clicks on the TTS controls themselves
+        if (target.closest('#tts-play-btn, #tts-stop-btn')) return;
+
+        // Exit selection mode once a selection is made
+        if (this.isSelectionMode) {
+            this.deactivateSelectionMode();
+        }
+
+        const mainContent = document.getElementById('main-content');
+        const readableTarget = target.closest('p, h1, h2, h3, h4, h5, h6, li, .stretch-card h5, .stretch-card p') as HTMLElement;
+
+        if (mainContent && readableTarget && mainContent.contains(readableTarget)) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const selection = window.getSelection();
+            // Default to start of element if selection is not available
+            let textToStartWith = readableTarget.innerText.trim();
+
+            if (selection && selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const startNode = range.startContainer;
+                const startOffset = range.startOffset;
+
+                let globalOffset = 0;
+                let foundNode = false;
+                // Use TreeWalker to accurately find click position in the element's plain text
+                const treeWalker = document.createTreeWalker(readableTarget, NodeFilter.SHOW_TEXT);
+                while (treeWalker.nextNode()) {
+                    const currentNode = treeWalker.currentNode;
+                    if (currentNode === startNode) {
+                        globalOffset += startOffset;
+                        foundNode = true;
+                        break;
+                    }
+                    globalOffset += currentNode.textContent?.length || 0;
+                }
+
+                const fullText = readableTarget.innerText;
+                
+                // Find the beginning of the sentence containing the click
+                let sentenceStart = 0;
+                // Only search if the node was found, otherwise globalOffset is meaningless
+                if (foundNode) {
+                    for (let i = globalOffset - 1; i >= 0; i--) {
+                        if ('.?!'.includes(fullText[i]) && (i + 1 < fullText.length && /\s/.test(fullText[i+1]))) {
+                            sentenceStart = i + 2; // Position after the terminator and space
+                            break;
+                        }
+                    }
+                }
+                textToStartWith = fullText.substring(sentenceStart).trim();
+            }
+            
+            this.textToSpeak = textToStartWith;
+            
+            // Find the element's index to start or continue the sequence from there
+            this.elements = Array.from(mainContent.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, .stretch-card h5, .stretch-card p'));
+            const clickedIndex = this.elements.indexOf(readableTarget);
+            if (clickedIndex !== -1) {
+                this.start(clickedIndex);
+            }
+        }
+    },
+
+    start(startIndex: number) {
+        if (this.isSpeaking) {
+            // This is a jump, cancel any ongoing speech.
+            speechSynthesis.cancel();
+        }
+
+        this.isSpeaking = true;
+        this.currentIndex = startIndex;
+        this.speakingSessionId = Date.now(); // Create a new, unique session ID
+        
+        const playBtn = document.getElementById('tts-play-btn');
+        const stopBtn = document.getElementById('tts-stop-btn');
+        if (playBtn) playBtn.style.display = 'none';
+        if (stopBtn) stopBtn.style.display = 'block';
+
+        this.speakNext();
+        this.startKeepAlive();
+    },
+
+    stop() {
+        if (!this.isSpeaking && !this.isSelectionMode) return;
+        
+        this.isSpeaking = false;
+        this.speakingSessionId = null; // Invalidate the current session
+        if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
+        
+        // Robust cancel to prevent getting stuck
+        speechSynthesis.resume();
+        speechSynthesis.cancel();
+        
+        this.cleanupUI();
+    },
+
+    cleanupUI() {
+        this.deactivateSelectionMode();
+        if (this.highlightedElement) {
+            this.highlightedElement.classList.remove('tts-reading-highlight');
+            this.highlightedElement = null;
+        }
+        
+        const playBtn = document.getElementById('tts-play-btn');
+        const stopBtn = document.getElementById('tts-stop-btn');
+        if (playBtn) playBtn.style.display = 'block';
+        if (stopBtn) stopBtn.style.display = 'none';
+    },
+
+    speakNext() {
+        const sessionId = this.speakingSessionId; // Capture session ID for this utterance
+        if (!this.isSpeaking || this.currentIndex >= this.elements.length || sessionId !== this.speakingSessionId) {
+            this.stop();
+            return;
+        }
+
+        const element = this.elements[this.currentIndex];
+        let text: string;
+
+        // Use the specific sentence-based text for the first utterance, then revert to full elements.
+        if (this.textToSpeak) {
+            text = this.textToSpeak;
+            this.textToSpeak = null; // Consume it so next call uses the next full element
+        } else {
+            text = element.innerText.trim();
+        }
+
+        if (!text) {
+            this.currentIndex++;
+            this.speakNext();
+            return;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'pt-BR';
+        if (this.ptBrVoice) {
+            utterance.voice = this.ptBrVoice;
+        }
+
+        // Adjust rate for a more natural, calmer pace
+        utterance.rate = 0.9;
+        utterance.pitch = 1.0; // Keep pitch at default
+
+        utterance.onstart = () => {
+            if (sessionId !== this.speakingSessionId) return; // Ignore if session is old
+            if (this.highlightedElement) {
+                this.highlightedElement.classList.remove('tts-reading-highlight');
+            }
+            element.classList.add('tts-reading-highlight');
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            this.highlightedElement = element;
+        };
+
+        utterance.onend = () => {
+            if (sessionId !== this.speakingSessionId) return; // Ignore if session is old
+            this.currentIndex++;
+            setTimeout(() => this.speakNext(), 500); // 500ms pause for natural flow
+        };
+        
+        utterance.onerror = (event) => {
+            if (sessionId !== this.speakingSessionId) return; // Ignore errors from old sessions
+            
+            // "interrupted" is a common event when we cancel speech intentionally. We can safely ignore it.
+            if (event.error === 'interrupted') {
+                return;
+            }
+
+            console.error("Speech synthesis error:", event.error);
+            window.showToast("Ocorreu um erro na leitura.", "error");
+            this.stop();
+        };
+
+        speechSynthesis.speak(utterance);
+    },
+    
+    startKeepAlive() {
+        if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
+        this.keepAliveInterval = setInterval(() => {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.resume(); // This is a no-op that keeps the connection alive on some browsers
+            } else if (!this.isSpeaking) {
+                // If the reader was stopped but the interval is still running, clear it.
+                 clearInterval(this.keepAliveInterval);
+            }
+        }, 10000); // Ping every 10 seconds
+    }
+};
+
 
 // --- Page Hierarchy for Breadcrumbs and Active State ---
 const pageHierarchy: { [key: string]: { parent: string | null; title: string } } = {
@@ -59,9 +323,6 @@ const pageHierarchy: { [key: string]: { parent: string | null; title: string } }
     'espiritual': { parent: 'inicio', title: 'Saúde Espiritual' },
     'leitura-guia-espiritual': { parent: 'espiritual', title: 'Guia de Leitura' },
     'preventiva': { parent: 'inicio', title: 'Saúde Preventiva' },
-    'mapa-mental': { parent: 'inicio', title: 'Mapa Mental' },
-    'planejamento-diario': { parent: 'inicio', title: 'Planejamento' },
-    'tarefas': { parent: 'inicio', title: 'Tarefas' },
     'food-gengibre': { parent: 'fisica', title: 'Gengibre' },
     'food-alho': { parent: 'fisica', title: 'Alho' },
     'food-brocolis': { parent: 'fisica', title: 'Brócolis' },
@@ -82,6 +343,13 @@ const pageHierarchy: { [key: string]: { parent: string | null; title: string } }
     'food-chaverde': { parent: 'fisica', title: 'Chá Verde' },
     'food-canela': { parent: 'fisica', title: 'Canela' },
     'food-linhaca': { parent: 'fisica', title: 'Linhaça' },
+    'food-couve': { parent: 'fisica', title: 'Couve' },
+    'food-rucula': { parent: 'fisica', title: 'Rúcula' },
+    'food-agriao': { parent: 'fisica', title: 'Agrião' },
+    'food-espinafre': { parent: 'fisica', title: 'Espinafre' },
+    'food-folhasbeterraba': { parent: 'fisica', title: 'Folhas de Beterraba' },
+    'food-almeirao': { parent: 'fisica', title: 'Almeirão' },
+    'food-denteleao': { parent: 'fisica', title: 'Dente-de-Leão' },
 };
 
 
@@ -112,6 +380,7 @@ function updateBreadcrumbs(pageKey: string) {
         } else {
             const a = document.createElement('a');
             a.href = `#${item.key}`;
+            a.dataset.page = item.key;
             a.textContent = item.title;
             li.appendChild(a);
         }
@@ -262,6 +531,17 @@ async function getAISuggestionForInput(prompt: string, targetInput: HTMLInputEle
 // --- App Initialization & Routing ---
 
 document.addEventListener('DOMContentLoaded', () => {
+    // FIX: Refactored API key check to be inside DOMContentLoaded for clearer control flow.
+    // This prevents potential race conditions and clarifies the execution path for the TypeScript compiler,
+    // resolving an issue where `window` could be incorrectly inferred as type `never`.
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+        console.error("API key is missing. Please set API_KEY in your environment variables.");
+        document.body.innerHTML = '<div style="padding: 20px; text-align: center; font-family: sans-serif; color: #d93025;"><h1>Configuration Error</h1><p>The Google AI API key is not configured. Please contact support.</p></div>';
+        return;
+    }
+    ai = new GoogleGenAI({ apiKey });
+
     // Make global helpers available on the window object
     window.showToast = showToast;
     window.saveItems = saveItems;
@@ -273,6 +553,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const detailsElements = document.querySelectorAll<HTMLDetailsElement>('.sidebar-links details');
     const mainContent = document.getElementById('main-content');
     const pageContentWrapper = document.getElementById('page-content-wrapper');
+
+    // --- Initialize TTS Reader ---
+    ttsReader.init();
 
     // --- Sidebar State Persistence ---
     const restoreMenuState = () => {
@@ -296,12 +579,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const pageCache: { [key: string]: string } = {};
 
     const router = async () => {
+        // Always clean up TTS reader before navigating
+        ttsReader.stop();
+        
         const hash = window.location.hash.substring(1);
         let pageKey = hash || 'inicio';
 
+        // Navigate to parent page if a sub-page is not found (e.g., specific food page)
         if (!pageHierarchy[pageKey]) {
-            console.warn(`Page key "${pageKey}" not found in hierarchy, defaulting to inicio.`);
-            pageKey = 'inicio';
+            const potentialParent = pageKey.split('-')[0];
+            if (pageHierarchy[potentialParent]) {
+                 pageKey = potentialParent;
+            } else {
+                console.warn(`Page key "${pageKey}" not found in hierarchy, defaulting to inicio.`);
+                pageKey = 'inicio';
+            }
+        }
+        
+        // Handle direct food links by navigating to the main 'fisica' page but handling the content loading below
+        if (pageKey.startsWith('food-')) {
+            updateBreadcrumbs(pageKey);
+            updateActiveNav('fisica'); // Keep 'Física' active
+        } else {
+             updateBreadcrumbs(pageKey);
+             updateActiveNav(pageKey);
         }
 
         if (!pageContentWrapper) {
@@ -323,17 +624,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 pageCache[pageKey] = pageHtml;
             }
 
-            pageContentWrapper.innerHTML = DOMPurify.sanitize(pageHtml);
-            
-            updateBreadcrumbs(pageKey);
-            updateActiveNav(pageKey);
+            pageContentWrapper.innerHTML = DOMPurify.sanitize(pageHtml, { ADD_ATTR: ['target'] });
             
             // Call setup and show for the newly loaded page
             switch (pageKey) {
                 case 'inicio': setupInicioPage(); showInicioPage(); break;
-                case 'tarefas': setupTarefasPage(); showTarefasPage(); break;
                 case 'espiritual': setupEspiritualPage(); showEspiritualPage(); break;
-                case 'planejamento-diario': setupPlanejamentoDiarioPage(); showPlanejamentoDiarioPage(); break;
                 case 'preventiva': setupPreventivaPage(); showPreventivaPage(); break;
                 case 'fisica': setupFisicaPage(); showFisicaPage(); break;
                 case 'mental': setupMentalPage(); showMentalPage(); break;
@@ -341,9 +637,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'familiar': setupFamiliarPage(); showFamiliarPage(); break;
                 case 'profissional': setupProfissionalPage(); showProfissionalPage(); break;
                 case 'social': setupSocialPage(); showSocialPage(); break;
-                case 'mapa-mental': setupMapaMentalPage(); showMapaMentalPage(); break;
                 case 'alongamento': setupAlongamentoPage(); showAlongamentoPage(); break;
-                // Add cases for other pages as they are created
+                default:
+                    // For food pages or other sub-pages that don't have their own setup
+                    if (pageKey.startsWith('food-')) {
+                        // No specific setup needed for static food pages
+                    }
+                    break;
             }
 
         } catch (error) {
@@ -382,12 +682,77 @@ document.addEventListener('DOMContentLoaded', () => {
         sidebarToggle.setAttribute('aria-expanded', String(!isCollapsed));
     });
 
-    // Default sidebar state based on screen width
-    if (window.innerWidth < 768) {
-        sidebar?.classList.add('collapsed');
-        document.body.classList.add('sidebar-collapsed');
+    // When the sidebar is collapsed, clicking a category summary should navigate directly.
+    const navSummaries = document.querySelectorAll<HTMLElement>('.sidebar-links summary[data-page-parent]');
+    navSummaries.forEach(summary => {
+        summary.addEventListener('click', (e) => {
+            if (sidebar?.classList.contains('collapsed')) {
+                e.preventDefault();
+                const pageKey = summary.dataset.pageParent;
+                if (pageKey) {
+                    window.location.hash = pageKey;
+                }
+            }
+        });
+    });
+
+    // Default sidebar state to collapsed
+    sidebar?.classList.add('collapsed');
+    document.body.classList.add('sidebar-collapsed');
+    sidebarToggle?.setAttribute('aria-expanded', 'false');
+
+    // --- Theme Toggle ---
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-toggle-icon');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const applyTheme = (theme: 'dark' | 'light') => {
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark-mode');
+            themeIcon?.classList.remove('fa-moon');
+            themeIcon?.classList.add('fa-sun');
+            themeToggle?.setAttribute('aria-label', 'Alternar para modo claro');
+        } else {
+            document.documentElement.classList.remove('dark-mode');
+            themeIcon?.classList.remove('fa-sun');
+            themeIcon?.classList.add('fa-moon');
+            themeToggle?.setAttribute('aria-label', 'Alternar para modo escuro');
+        }
+    };
+
+    const savedTheme = localStorage.getItem('theme');
+    // Apply saved theme or system preference
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark.matches)) {
+        applyTheme('dark');
     } else {
-        sidebar?.classList.remove('collapsed');
-        document.body.classList.remove('sidebar-collapsed');
+        applyTheme('light');
     }
+
+    themeToggle?.addEventListener('click', () => {
+        const isDark = document.documentElement.classList.contains('dark-mode');
+        if (isDark) {
+            applyTheme('light');
+            localStorage.setItem('theme', 'light');
+        } else {
+            applyTheme('dark');
+            localStorage.setItem('theme', 'dark');
+        }
+    });
+
+    // --- Rain Sound ---
+    const rainSoundToggle = document.getElementById('rain-sound-toggle');
+    const rainSound = document.getElementById('rain-sound') as HTMLAudioElement;
+
+    rainSoundToggle?.addEventListener('click', () => {
+        if (!rainSound) return;
+        if (rainSound.paused) {
+            rainSound.play().catch(error => console.error("Error playing sound:", error));
+            rainSoundToggle.classList.add('playing');
+            rainSoundToggle.setAttribute('aria-label', 'Pausar som de chuva');
+        } else {
+            rainSound.pause();
+            rainSoundToggle.classList.remove('playing');
+            rainSoundToggle.setAttribute('aria-label', 'Tocar som de chuva');
+        }
+    });
 });
