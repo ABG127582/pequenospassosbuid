@@ -2,19 +2,27 @@
 // This file contains the logic for the "Início" (Home) page.
 
 /**
- * Sets up event listeners for the home page.
- * The home page is currently composed of static cards (links),
- * so no specific JavaScript setup is needed at this time.
- * This function is included to maintain the application's modular pattern.
+ * Sets up event listeners for the home page cards to make them clickable.
  */
 export function setupInicioPage(): void {
     const page = document.getElementById('page-inicio');
     if (!page) {
-        // This might happen briefly during page transitions, so a console.warn is sufficient.
         console.warn("Home page container (#page-inicio) not found during setup.");
         return;
     }
-    // No interactive elements requiring setup beyond standard anchor tags.
+
+    // Select all card buttons that have a data-page attribute
+    const cards = page.querySelectorAll<HTMLElement>('.saude-card[data-page]');
+
+    cards.forEach(card => {
+        card.addEventListener('click', () => {
+            const pageKey = card.dataset.page;
+            if (pageKey) {
+                // Use window.location.hash to trigger the router
+                window.location.hash = pageKey;
+            }
+        });
+    });
 }
 
 /**
@@ -23,5 +31,4 @@ export function setupInicioPage(): void {
  */
 export function showInicioPage(): void {
     // The home page is static, so no specific actions are needed on show.
-    // The router handles scrolling to the top of the main content area.
 }
