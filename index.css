@@ -493,6 +493,13 @@ a[data-page*="inicio"].active { --section-color: var(--color-inicio); --section-
     min-height: 120px;
     resize: vertical;
 }
+.form-group {
+    margin-bottom: 20px;
+}
+.form-group input[type="range"] {
+    width: 100%;
+    cursor: pointer;
+}
 
 /* Botões */
 .standard-button, .btn {
@@ -715,7 +722,7 @@ html.dark-mode .tooltip::after {
 }
 
 .rain-sound-button {
-    right: 160px;
+    right: 150px;
     background-color: var(--color-mental);
 }
 .rain-sound-button.playing {
@@ -738,14 +745,14 @@ html.dark-mode .tooltip::after {
 
 /* --- Text-to-Speech Reader --- */
 .tts-fab-play {
-    right: 90px;
+    right: 85px;
     background-color: var(--color-info);
-    font-size: 1.2rem;
+    font-size: 1.4rem;
 }
 .tts-fab-stop {
-    right: 90px;
+    right: 85px;
     background-color: var(--color-error);
-    font-size: 1.2rem;
+    font-size: 1.4rem;
 }
 
 /* TTS Selection Mode & Highlighting */
@@ -854,5 +861,171 @@ html.dark-mode .tts-reading-highlight {
     line-height: 1.6;
 }
 
-/* Modals, FABs, Toasts, etc. (o resto do arquivo CSS permanece o mesmo) */
-/* ... (rest of the CSS file is unchanged) ... */
+/* --- Modals --- */
+.modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    /* display is controlled by JS via inline style */
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+    animation: fadeInModal 0.3s ease-in-out;
+}
+
+.modal-content {
+    background-color: var(--card-background-color);
+    padding: 25px;
+    border-radius: var(--card-border-radius);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    animation: slideInModal 0.3s ease-out;
+}
+
+.large-modal-content {
+    max-width: 800px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.modal-close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-color-muted);
+    cursor: pointer;
+    padding: 5px;
+    transition: color var(--transition-speed) ease;
+}
+
+.modal-close-button:hover {
+    color: var(--color-error);
+}
+
+.modal-body {
+    overflow-y: auto;
+    flex-grow: 1;
+    padding-right: 10px; /* Space for scrollbar if needed */
+}
+
+.modal-footer {
+    padding-top: 20px;
+    margin-top: 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+@keyframes fadeInModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInModal {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* --- Toast Notification --- */
+#toast-notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000; /* Above everything */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.toast-notification {
+    background-color: var(--card-background-color);
+    color: var(--text-color);
+    padding: 15px 20px;
+    border-radius: var(--card-border-radius);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-left: 5px solid var(--color-info);
+    opacity: 0;
+    transform: translateX(100%);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    min-width: 250px;
+    max-width: 350px;
+}
+.toast-notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+.toast-notification.success { border-left-color: var(--color-success); }
+.toast-notification.error { border-left-color: var(--color-error); }
+.toast-notification.warning { border-left-color: var(--color-warning); }
+.toast-notification.info { border-left-color: var(--color-info); }
+
+
+/* --- AI & Input Wrappers --- */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    width: 100%;
+    align-items: center;
+}
+
+.input-wrapper input,
+.input-wrapper textarea {
+    flex-grow: 1;
+    padding-right: 45px !important; /* Space for AI button */
+}
+.input-wrapper.textarea-wrapper {
+    align-items: flex-start;
+}
+.ai-suggestion-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--section-color, var(--color-mental));
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 8px;
+    line-height: 1;
+    z-index: 5;
+    transition: color 0.2s, transform 0.2s;
+}
+.input-wrapper.textarea-wrapper .ai-suggestion-btn {
+    top: 12px;
+    transform: translateY(0);
+}
+.ai-suggestion-btn:hover {
+    transform: translateY(-50%) scale(1.1);
+}
+.input-wrapper.textarea-wrapper .ai-suggestion-btn:hover {
+    transform: scale(1.1);
+}
+.ai-suggestion-btn:disabled {
+    cursor: not-allowed;
+    color: var(--text-color-muted);
+}
+.ai-suggestion-btn .fa-wand-magic-sparkles { display: inline-block; }
+.ai-suggestion-btn.loading .fa-wand-magic-sparkles { display: none; }
+.ai-suggestion-btn .fa-spinner { display: none; }
+.ai-suggestion-btn.loading .fa-spinner { display: inline-block; }
+```

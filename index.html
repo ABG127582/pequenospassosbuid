@@ -105,8 +105,8 @@
     <button id="rain-sound-toggle" class="fab-button rain-sound-button" aria-label="Tocar som de chuva">
         <i class="fas fa-cloud-rain"></i>
     </button>
-    <button id="tts-play-btn" class="fab-button tts-fab-play" aria-label="Ler página em voz alta">▶️</button>
-    <button id="tts-stop-btn" class="fab-button tts-fab-stop" aria-label="Parar leitura" style="display: none;">⏹️</button>
+    <button id="tts-play-btn" class="fab-button tts-fab-play" aria-label="Ler página em voz alta"><i class="fas fa-volume-up"></i></button>
+    <button id="tts-stop-btn" class="fab-button tts-fab-stop" aria-label="Parar leitura" style="display: none;"><i class="fas fa-stop"></i></button>
     <audio id="rain-sound" src="https://www.soundjay.com/nature/sounds/rain-03.mp3" loop></audio>
 
     <!-- Global Modals -->
@@ -125,20 +125,34 @@
         </div>
     </div>
 
-    <div id="indicator-chart-modal" class="modal-container" role="dialog" aria-modal="true" aria-labelledby="indicator-chart-modal-title">
-      <div class="modal-content large-modal-content">
-        <header class="modal-header">
-          <h2 id="indicator-chart-modal-title">Histórico do Indicador</h2>
-          <button id="indicator-chart-modal-close-btn" class="modal-close-button" aria-label="Fechar Gráfico"><i class="fas fa-times"></i></button>
-        </header>
-        <div class="modal-body" style="min-height: 400px;">
-          <canvas id="indicator-chart-canvas"></canvas>
-          <p id="indicator-chart-no-data" style="text-align:center; display:none;"></p>
+    <!-- TTS Settings Modal -->
+    <div id="tts-settings-modal" class="modal-container" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="tts-settings-title">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 id="tts-settings-title">Configurações de Leitura</h2>
+                <button id="tts-settings-close-btn" class="modal-close-button" aria-label="Fechar Configurações"><i class="fas fa-times"></i></button>
+            </header>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="tts-voice-select">Voz:</label>
+                    <select id="tts-voice-select">
+                        <option value="">Carregando vozes...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tts-rate-slider">Velocidade: <span id="tts-rate-value">0.9</span></label>
+                    <input type="range" id="tts-rate-slider" min="0.5" max="2" step="0.1" value="0.9">
+                </div>
+                <div class="form-group">
+                    <label for="tts-pitch-slider">Tom: <span id="tts-pitch-value">1.0</span></label>
+                    <input type="range" id="tts-pitch-slider" min="0" max="2" step="0.1" value="1.0">
+                </div>
+            </div>
+            <footer class="modal-footer">
+                 <button id="tts-settings-test-btn" class="standard-button-secondary">Testar Voz</button>
+                 <button id="tts-start-reading-btn" class="standard-button">Iniciar Leitura</button>
+            </footer>
         </div>
-        <footer class="modal-footer">
-          <button id="indicator-chart-modal-cancel-btn" class="standard-button">Fechar</button>
-        </footer>
-      </div>
     </div>
 
     <!-- Toast Notification Container -->

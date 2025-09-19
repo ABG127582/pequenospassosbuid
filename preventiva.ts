@@ -169,7 +169,6 @@ const indicatorConfig: { [key: string]: any } = {
     'massamagra_bio': { name: 'Massa Magra', unit: 'kg', min: 30, max: 90, reversed: true, zones: [{ to: 49, color: '#e74a3b', status: 'Alerta', tip: 'Baixa' }, { to: 80, color: '#1cc88a', status: 'Normal', tip: 'Normal' }, { to: 90, color: '#1cc88a', status: 'Ótimo', tip: 'Elevada' }] },
 };
 
-let indicatorChartInstance: any = null; // Chart.js instance
 
 // --- Helper Functions ---
 const getInterpretation = (value: number, zones: any[], reversed: boolean = false) => {
@@ -244,115 +243,8 @@ const updateIndicator = (indicatorId: string) => {
     const data = { value, date };
     window.saveItems(`preventiva-indicator-${indicatorId}`, data);
     
-    const history = window.loadItems(`preventiva-indicator-history-${indicatorId}`) || [];
-    history.push(data);
-    window.saveItems(`preventiva-indicator-history-${indicatorId}`, history);
-    
     window.showToast(`${indicatorConfig[indicatorId].name} atualizado com sucesso!`, 'success');
     renderIndicatorCard(indicatorId);
-};
-
-const showIndicatorChart = (indicatorId: string) => {
-    // Note: Modal elements are in index.html, so we query the global document
-    const modal = document.getElementById('indicator-chart-modal');
-    const canvas = document.getElementById('indicator-chart-canvas') as HTMLCanvasElement;
-    const noDataEl = document.getElementById('indicator-chart-no-data');
-    const modalTitle = document.getElementById('indicator-chart-modal-title');
-    if (!modal || !canvas || !noDataEl || !modalTitle) return;
-
-    const config = indicatorConfig[indicatorId];
-    const history = (window.loadItems(`preventiva-indicator-history-${indicatorId}`) || []).sort((a:any, b:any) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    
-    modalTitle.textContent = `Histórico de ${config.name}`;
-
-    if (history.length < 2) {
-        canvas.style.display = 'none';
-        if(noDataEl) noDataEl.style.display = 'block';
-        if(noDataEl) noDataEl.textContent = 'São necessários pelo menos 2 registros para exibir um gráfico.';
-    } else {
-        canvas.style.display = 'block';
-        if(noDataEl) noDataEl.style.display = 'none';
-
-        const labels = history.map((entry: any) => new Date(entry.date + 'T00:00:00').toLocaleDateString('pt-BR'));
-        const data = history.map((entry: any) => entry.value);
-
-        if (indicatorChartInstance) {
-            indicatorChartInstance.destroy();
-        }
-
-        const Chart = window.Chart;
-        if (!Chart) {
-            console.error('Chart.js not loaded');
-            return;
-        }
-
-        const ctx = canvas.getContext('2d');
-        if(!ctx) return;
-        indicatorChartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: config.name,
-                    data: data,
-                    borderColor: 'var(--color-preventiva)',
-                    backgroundColor: 'rgba(var(--color-preventiva-rgb), 0.1)',
-                    tension: 0.1,
-                    fill: true,
-                }]
-            },
-            options: {
-                 scales: { y: { beginAtZero: false } },
-                 plugins: { legend: { display: false } }
-            }
-        });
-    }
-
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('visible'), 10);
-};
-
-const renderHistoryPage = () => {
-    const historicoTableBody = document.getElementById('historicoIndicadoresBody');
-    if (!historicoTableBody) return;
-
-    let allHistory: (any & { indicatorId: string; indicatorName: string })[] = [];
-
-    Object.keys(indicatorConfig).forEach(indicatorId => {
-        const history = window.loadItems(`preventiva-indicator-history-${indicatorId}`) || [];
-        const indicatorName = indicatorConfig[indicatorId].name;
-        history.forEach((entry: any) => {
-            allHistory.push({ ...entry, indicatorId, indicatorName });
-        });
-    });
-
-    allHistory.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    
-    historicoTableBody.innerHTML = '';
-    if (allHistory.length === 0) {
-        historicoTableBody.innerHTML = '<tr><td colspan="5" class="empty-list-placeholder">Nenhum histórico de biomarcadores encontrado.</td></tr>';
-        return;
-    }
-
-    allHistory.slice(0, 50).forEach(entry => { // Limit to 50 entries
-        const config = indicatorConfig[entry.indicatorId];
-        const { status } = getInterpretation(entry.value, config.zones, config.reversed);
-        const formattedDate = new Date(entry.date + 'T00:00:00').toLocaleDateString('pt-BR');
-        
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${DOMPurify.sanitize(entry.indicatorName)}</td>
-            <td>${formattedDate}</td>
-            <td>${entry.value} ${config.unit || ''}</td>
-            <td><span class="interpretation status-${status.toLowerCase().replace(/\s/g, '-')}">${status}</span></td>
-            <td>
-                <button class="history-chart-btn standard-button-secondary small-button" data-indicator-id="${entry.indicatorId}" title="Ver Gráfico">
-                    <i class="fas fa-chart-line"></i>
-                </button>
-            </td>
-        `;
-        historicoTableBody.appendChild(row);
-    });
 };
 
 const showPreventivaPageUI = (targetId: string, mainContainer: HTMLElement) => {
@@ -374,9 +266,6 @@ const showPreventivaPageUI = (targetId: string, mainContainer: HTMLElement) => {
         if (targetId === 'preventivaVacinas') {
             loadAndDisplayAllVaccines();
         }
-        if (targetId === 'preventivaHistorico') {
-            renderHistoryPage();
-        }
     }
 };
 
@@ -390,13 +279,8 @@ export function setupPreventivaPage() {
     const backButton = mainContainer.querySelector<HTMLElement>('#preventivaBackButton');
     const mainTitle = mainContainer.querySelector('#preventivaMainTitle');
     const indicatorGrid = mainContainer.querySelector('#preventivaExames');
-    const historicoTable = mainContainer.querySelector('#tabela-historico-indicadores');
     const vacinasTable = mainContainer.querySelector('#tabela-vacinas');
     
-    const closeChartModalBtn = document.getElementById('indicator-chart-modal-close-btn');
-    const cancelChartModalBtn = document.getElementById('indicator-chart-modal-cancel-btn');
-    const chartModal = document.getElementById('indicator-chart-modal');
-
     mainMenu?.addEventListener('click', (e) => {
         const target = e.target as HTMLElement;
         const menuItem = target.closest<HTMLElement>('.menu-item');
@@ -422,29 +306,10 @@ export function setupPreventivaPage() {
         if (target.closest('.update-button')) {
             updateIndicator(indicatorId);
         }
-        if (target.closest('.history-button')) {
-            showIndicatorChart(indicatorId);
-        }
-    });
-
-    historicoTable?.addEventListener('click', (e) => {
-        const target = e.target as HTMLElement;
-        const chartButton = target.closest('.history-chart-btn');
-        if (chartButton && (chartButton as HTMLElement).dataset.indicatorId) {
-            showIndicatorChart((chartButton as HTMLElement).dataset.indicatorId);
-        }
     });
 
     vacinasTable?.addEventListener('change', handleVaccineDateChange);
 
-    const closeChartModal = () => {
-        if (chartModal) {
-            chartModal.classList.remove('visible');
-            setTimeout(() => { if (chartModal) chartModal.style.display = 'none'; }, 300);
-        }
-    };
-    closeChartModalBtn?.addEventListener('click', closeChartModal);
-    cancelChartModalBtn?.addEventListener('click', closeChartModal);
 }
 
 export function showPreventivaPage() {

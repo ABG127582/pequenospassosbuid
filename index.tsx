@@ -38,58 +38,166 @@ const ttsReader = {
     highlightedElement: null as HTMLElement | null,
     keepAliveInterval: undefined as number | undefined,
     ptBrVoice: null as SpeechSynthesisVoice | null,
-    textToSpeak: null as string | null, // To start reading from a specific sentence
-    speakingSessionId: null as number | null, // To prevent race conditions with interruptions
+    textToSpeak: null as string | null,
+    speakingSessionId: null as number | null,
+    settingsModal: null as HTMLElement | null,
+    
+    // User-configurable settings
+    voiceURI: null as string | null,
+    rate: 0.9,
+    pitch: 1.0,
+    
+    openSettings() {
+        if(this.settingsModal) this.settingsModal.style.display = 'flex';
+    },
+
+    closeSettings() {
+        if(this.settingsModal) this.settingsModal.style.display = 'none';
+    },
 
     init() {
-        const findVoice = () => {
+        this.settingsModal = document.getElementById('tts-settings-modal');
+        this.loadSettings();
+
+        const findVoiceAndPopulateDropdown = () => {
             const voices = speechSynthesis.getVoices();
             const ptBrVoices = voices.filter(v => v.lang === 'pt-BR');
-    
+            const voiceSelect = document.getElementById('tts-voice-select') as HTMLSelectElement;
+
+            if (!voiceSelect) return;
+            const currentVal = voiceSelect.value;
+            voiceSelect.innerHTML = '';
+
             if (ptBrVoices.length === 0) {
+                voiceSelect.innerHTML = '<option value="">Nenhuma voz em Português encontrada</option>';
                 this.ptBrVoice = null;
                 return;
             }
-    
-            // Prioritize voices based on quality indicators for a more pleasant sound
-            const sortedVoices = ptBrVoices.sort((a, b) => {
-                let scoreA = 0;
-                let scoreB = 0;
-    
-                // Higher score for non-local (network) voices, often higher quality
+
+            ptBrVoices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.voiceURI;
+                option.textContent = `${voice.name} (${voice.lang.replace('-', '_')})`;
+                if (voice.localService) option.textContent += ' - Local';
+                voiceSelect.appendChild(option);
+            });
+            
+            // Sort voices to find the best default
+            const sortedVoices = [...ptBrVoices].sort((a, b) => {
+                let scoreA = 0, scoreB = 0;
                 if (!a.localService) scoreA += 10;
                 if (!b.localService) scoreB += 10;
-    
-                // Higher score for voices from major providers
                 if (a.name.includes('Google')) scoreA += 5;
                 if (b.name.includes('Google')) scoreB += 5;
-                if (a.name.includes('Microsoft')) scoreA += 3; // Microsoft voices are also often good
+                if (a.name.includes('Microsoft')) scoreA += 3;
                 if (b.name.includes('Microsoft')) scoreB += 3;
-                
-                // Higher score for known high-quality voice names in Portuguese
                 if (/Luciana|Felipe/i.test(a.name)) scoreA += 3;
                 if (/Luciana|Felipe/i.test(b.name)) scoreB += 3;
-    
-                // Higher score for the default voice as a fallback preference
                 if (a.default) scoreA += 1;
                 if (b.default) scoreB += 1;
-    
-                return scoreB - scoreA; // Sort descending by score
+                return scoreB - scoreA;
             });
-    
-            this.ptBrVoice = sortedVoices[0] || null;
+
+            const bestVoice = sortedVoices[0] || null;
+            const savedVoiceURI = this.voiceURI;
+            const preselectedVoice = ptBrVoices.find(v => v.voiceURI === savedVoiceURI) || bestVoice;
+
+            if (preselectedVoice) {
+                this.ptBrVoice = preselectedVoice;
+                this.voiceURI = preselectedVoice.voiceURI;
+                voiceSelect.value = preselectedVoice.voiceURI;
+            } else {
+                this.ptBrVoice = bestVoice;
+                 if(bestVoice) {
+                    this.voiceURI = bestVoice.voiceURI;
+                    voiceSelect.value = bestVoice.voiceURI;
+                 }
+            }
         };
-        findVoice();
+
+        findVoiceAndPopulateDropdown();
         if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = findVoice;
+            speechSynthesis.onvoiceschanged = findVoiceAndPopulateDropdown;
         }
 
         const playBtn = document.getElementById('tts-play-btn');
         const stopBtn = document.getElementById('tts-stop-btn');
-
-        playBtn?.addEventListener('click', () => this.activateSelectionMode());
+        playBtn?.addEventListener('click', () => this.openSettings());
         stopBtn?.addEventListener('click', () => this.stop());
         document.body.addEventListener('click', (e) => this.handleBodyClick(e), true);
+
+        // --- Settings UI Listeners ---
+        const settingsCloseBtn = document.getElementById('tts-settings-close-btn');
+        const startReadingBtn = document.getElementById('tts-start-reading-btn');
+        const voiceSelect = document.getElementById('tts-voice-select') as HTMLSelectElement;
+        const rateSlider = document.getElementById('tts-rate-slider') as HTMLInputElement;
+        const rateValue = document.getElementById('tts-rate-value') as HTMLSpanElement;
+        const pitchSlider = document.getElementById('tts-pitch-slider') as HTMLInputElement;
+        const pitchValue = document.getElementById('tts-pitch-value') as HTMLSpanElement;
+        const testBtn = document.getElementById('tts-settings-test-btn');
+
+        settingsCloseBtn?.addEventListener('click', () => this.closeSettings());
+        startReadingBtn?.addEventListener('click', () => {
+            this.closeSettings();
+            this.activateSelectionMode();
+        });
+
+        voiceSelect?.addEventListener('change', () => {
+            this.voiceURI = voiceSelect.value;
+            this.ptBrVoice = speechSynthesis.getVoices().find(v => v.voiceURI === this.voiceURI) || this.ptBrVoice;
+            this.saveSettings();
+        });
+
+        rateSlider?.addEventListener('input', () => {
+            this.rate = parseFloat(rateSlider.value);
+            if (rateValue) rateValue.textContent = this.rate.toFixed(1);
+            this.saveSettings();
+        });
+
+        pitchSlider?.addEventListener('input', () => {
+            this.pitch = parseFloat(pitchSlider.value);
+            if (pitchValue) pitchValue.textContent = this.pitch.toFixed(1);
+            this.saveSettings();
+        });
+
+        testBtn?.addEventListener('click', () => this.testVoice());
+    },
+
+    loadSettings() {
+        const saved = window.loadItems('ttsReaderSettings');
+        if (saved) {
+            this.voiceURI = saved.voiceURI || null;
+            this.rate = saved.rate || 0.9;
+            this.pitch = saved.pitch || 1.0;
+        }
+        
+        const rateSlider = document.getElementById('tts-rate-slider') as HTMLInputElement;
+        const rateValue = document.getElementById('tts-rate-value') as HTMLSpanElement;
+        const pitchSlider = document.getElementById('tts-pitch-slider') as HTMLInputElement;
+        const pitchValue = document.getElementById('tts-pitch-value') as HTMLSpanElement;
+
+        if (rateSlider) rateSlider.value = String(this.rate);
+        if (rateValue) rateValue.textContent = this.rate.toFixed(1);
+        if (pitchSlider) pitchSlider.value = String(this.pitch);
+        if (pitchValue) pitchValue.textContent = this.pitch.toFixed(1);
+    },
+
+    saveSettings() {
+        window.saveItems('ttsReaderSettings', {
+            voiceURI: this.voiceURI,
+            rate: this.rate,
+            pitch: this.pitch,
+        });
+    },
+    
+    testVoice() {
+        speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance("Olá, esta é uma amostra da voz e das configurações selecionadas.");
+        utterance.lang = 'pt-BR';
+        if (this.ptBrVoice) utterance.voice = this.ptBrVoice;
+        utterance.rate = this.rate;
+        utterance.pitch = this.pitch;
+        speechSynthesis.speak(utterance);
     },
 
     activateSelectionMode() {
@@ -104,21 +212,17 @@ const ttsReader = {
         document.body.classList.remove('tts-selection-mode');
     },
 
-    // Central handler for clicks on the page body
     handleBodyClick(e: MouseEvent) {
-        // If in selection mode, or already speaking, a click on readable text should trigger speech.
+        if (e.target && (e.target as HTMLElement).closest('.modal-container')) return;
         if (this.isSelectionMode || this.isSpeaking) {
             this.handleReadingStartOrJump(e);
         }
     },
 
-    // Replaces the old handleSelectionClick with new, more powerful logic
     handleReadingStartOrJump(e: MouseEvent) {
         const target = e.target as HTMLElement;
-        // Ignore clicks on the TTS controls themselves
         if (target.closest('#tts-play-btn, #tts-stop-btn')) return;
 
-        // Exit selection mode once a selection is made
         if (this.isSelectionMode) {
             this.deactivateSelectionMode();
         }
@@ -131,7 +235,6 @@ const ttsReader = {
             e.stopPropagation();
 
             const selection = window.getSelection();
-            // Default to start of element if selection is not available
             let textToStartWith = readableTarget.innerText.trim();
 
             if (selection && selection.rangeCount > 0) {
@@ -141,7 +244,6 @@ const ttsReader = {
 
                 let globalOffset = 0;
                 let foundNode = false;
-                // Use TreeWalker to accurately find click position in the element's plain text
                 const treeWalker = document.createTreeWalker(readableTarget, NodeFilter.SHOW_TEXT);
                 while (treeWalker.nextNode()) {
                     const currentNode = treeWalker.currentNode;
@@ -155,13 +257,11 @@ const ttsReader = {
 
                 const fullText = readableTarget.innerText;
                 
-                // Find the beginning of the sentence containing the click
                 let sentenceStart = 0;
-                // Only search if the node was found, otherwise globalOffset is meaningless
                 if (foundNode) {
                     for (let i = globalOffset - 1; i >= 0; i--) {
                         if ('.?!'.includes(fullText[i]) && (i + 1 < fullText.length && /\s/.test(fullText[i+1]))) {
-                            sentenceStart = i + 2; // Position after the terminator and space
+                            sentenceStart = i + 2;
                             break;
                         }
                     }
@@ -171,7 +271,6 @@ const ttsReader = {
             
             this.textToSpeak = textToStartWith;
             
-            // Find the element's index to start or continue the sequence from there
             this.elements = Array.from(mainContent.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, .stretch-card h5, .stretch-card p'));
             const clickedIndex = this.elements.indexOf(readableTarget);
             if (clickedIndex !== -1) {
@@ -182,13 +281,12 @@ const ttsReader = {
 
     start(startIndex: number) {
         if (this.isSpeaking) {
-            // This is a jump, cancel any ongoing speech.
             speechSynthesis.cancel();
         }
 
         this.isSpeaking = true;
         this.currentIndex = startIndex;
-        this.speakingSessionId = Date.now(); // Create a new, unique session ID
+        this.speakingSessionId = Date.now();
         
         const playBtn = document.getElementById('tts-play-btn');
         const stopBtn = document.getElementById('tts-stop-btn');
@@ -203,10 +301,9 @@ const ttsReader = {
         if (!this.isSpeaking && !this.isSelectionMode) return;
         
         this.isSpeaking = false;
-        this.speakingSessionId = null; // Invalidate the current session
+        this.speakingSessionId = null;
         if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
         
-        // Robust cancel to prevent getting stuck
         speechSynthesis.resume();
         speechSynthesis.cancel();
         
@@ -227,7 +324,7 @@ const ttsReader = {
     },
 
     speakNext() {
-        const sessionId = this.speakingSessionId; // Capture session ID for this utterance
+        const sessionId = this.speakingSessionId;
         if (!this.isSpeaking || this.currentIndex >= this.elements.length || sessionId !== this.speakingSessionId) {
             this.stop();
             return;
@@ -236,10 +333,9 @@ const ttsReader = {
         const element = this.elements[this.currentIndex];
         let text: string;
 
-        // Use the specific sentence-based text for the first utterance, then revert to full elements.
         if (this.textToSpeak) {
             text = this.textToSpeak;
-            this.textToSpeak = null; // Consume it so next call uses the next full element
+            this.textToSpeak = null;
         } else {
             text = element.innerText.trim();
         }
@@ -256,12 +352,11 @@ const ttsReader = {
             utterance.voice = this.ptBrVoice;
         }
 
-        // Adjust rate for a more natural, calmer pace
-        utterance.rate = 0.9;
-        utterance.pitch = 1.0; // Keep pitch at default
+        utterance.rate = this.rate;
+        utterance.pitch = this.pitch;
 
         utterance.onstart = () => {
-            if (sessionId !== this.speakingSessionId) return; // Ignore if session is old
+            if (sessionId !== this.speakingSessionId) return;
             if (this.highlightedElement) {
                 this.highlightedElement.classList.remove('tts-reading-highlight');
             }
@@ -271,19 +366,16 @@ const ttsReader = {
         };
 
         utterance.onend = () => {
-            if (sessionId !== this.speakingSessionId) return; // Ignore if session is old
+            if (sessionId !== this.speakingSessionId) return;
             this.currentIndex++;
-            setTimeout(() => this.speakNext(), 500); // 500ms pause for natural flow
+            setTimeout(() => this.speakNext(), 500);
         };
         
         utterance.onerror = (event) => {
-            if (sessionId !== this.speakingSessionId) return; // Ignore errors from old sessions
-            
-            // "interrupted" is a common event when we cancel speech intentionally. We can safely ignore it.
+            if (sessionId !== this.speakingSessionId) return;
             if (event.error === 'interrupted') {
                 return;
             }
-
             console.error("Speech synthesis error:", event.error);
             window.showToast("Ocorreu um erro na leitura.", "error");
             this.stop();
@@ -296,12 +388,11 @@ const ttsReader = {
         if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
         this.keepAliveInterval = setInterval(() => {
             if (speechSynthesis.speaking) {
-                speechSynthesis.resume(); // This is a no-op that keeps the connection alive on some browsers
+                speechSynthesis.resume();
             } else if (!this.isSpeaking) {
-                // If the reader was stopped but the interval is still running, clear it.
                  clearInterval(this.keepAliveInterval);
             }
-        }, 10000); // Ping every 10 seconds
+        }, 10000);
     }
 };
 
